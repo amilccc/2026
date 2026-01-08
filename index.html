@@ -2,26 +2,32 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control Financiero Maestro 2026 - Final</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Finanzas 2026 - Control Total</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; padding-bottom: 90px; }
         .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .tab-btn.active { border-bottom: 4px solid #4f46e5; color: #4f46e5; background-color: #f5f3ff; }
+        .tab-content.active { display: block; animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .active-tab-btn { color: #4f46e5 !important; }
+        .active-tab-btn i { transform: scale(1.1); color: #4f46e5; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        /* Estilo para que la tabla de historial sea legible en móvil */
+        .history-card { background: white; border-radius: 1.5rem; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 1rem; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen font-sans text-slate-900">
+<body class="bg-slate-50 min-h-screen">
 
-    <header class="bg-indigo-950 text-white p-4 md:p-6 shadow-xl sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-4">
-                <div class="bg-indigo-500 p-2 rounded-lg"><i class="fas fa-wallet text-2xl"></i></div>
+    <header class="bg-indigo-950 text-white p-4 sticky top-0 z-50 shadow-md">
+        <div class="flex justify-between items-center max-w-lg mx-auto">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-500 p-2 rounded-xl"><i class="fas fa-wallet"></i></div>
                 <div>
-                    <h1 class="text-xl font-black tracking-tighter uppercase">Gestión 2026</h1>
-                    <select id="global-month" onchange="changeMonth()" class="bg-transparent text-indigo-300 font-bold uppercase text-xs outline-none cursor-pointer">
+                    <h1 class="text-sm font-black uppercase tracking-tighter" id="display-month">Enero</h1>
+                    <select id="global-month" onchange="changeMonth()" class="bg-transparent text-[10px] font-bold uppercase text-indigo-300 outline-none cursor-pointer">
                         <option value="Enero" class="bg-indigo-900">Enero</option>
                         <option value="Febrero" class="bg-indigo-900">Febrero</option>
                         <option value="Marzo" class="bg-indigo-900">Marzo</option>
@@ -37,249 +43,246 @@
                     </select>
                 </div>
             </div>
-            <button onclick="saveCurrentMonth()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-2 rounded-full font-black text-sm transition-all shadow-lg active:scale-95">
-                <i class="fas fa-save mr-2"></i>GUARDAR MES
+            <button onclick="saveCurrentMonth()" class="bg-emerald-500 text-white px-4 py-2 rounded-full font-black text-[10px] active:scale-95 transition-all shadow-lg">
+                <i class="fas fa-save mr-1"></i> GUARDAR
             </button>
         </div>
     </header>
 
-    <div class="max-w-7xl mx-auto p-2 md:p-6">
-        <nav class="flex bg-white rounded-t-2xl shadow-md border-b overflow-x-auto">
-            <button onclick="openTab(event, 'esperado')" class="tab-btn active flex-1 py-4 px-4 font-bold text-gray-400 whitespace-nowrap text-[10px] md:text-xs uppercase tracking-widest">1. Plan Esperado</button>
-            <button onclick="openTab(event, 'real')" class="tab-btn flex-1 py-4 px-4 font-bold text-gray-400 whitespace-nowrap text-[10px] md:text-xs uppercase tracking-widest">2. Registro Real</button>
-            <button onclick="openTab(event, 'ahorro')" class="tab-btn flex-1 py-4 px-4 font-bold text-gray-400 whitespace-nowrap text-[10px] md:text-xs uppercase tracking-widest">3. Resumen Metas</button>
-            <button onclick="openTab(event, 'historial')" class="tab-btn flex-1 py-4 px-4 font-bold text-gray-400 whitespace-nowrap text-[10px] md:text-xs uppercase tracking-widest">4. Historial</button>
-        </nav>
-
-        <div class="bg-white p-4 md:p-8 rounded-b-2xl shadow-2xl border-x border-b min-h-[600px]">
-
-            <div id="esperado" class="tab-content active space-y-10">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-                    <div>
-                        <div class="flex justify-between items-center bg-indigo-50 p-3 rounded-t-xl border-b-2 border-indigo-500">
-                            <h3 class="font-black text-indigo-900 uppercase italic">Plan Quincena 1</h3>
-                            <div class="text-right"><span class="text-[10px] font-bold block opacity-50">INGRESO ESPERADO</span><b class="text-indigo-600 text-lg">Q4,700.00</b></div>
-                        </div>
-                        <div class="space-y-2 text-sm mt-4">
-                            <div class="flex justify-between border-b pb-1"><span>Promerica</span><b>Q1,024.86</b></div>
-                            <div class="flex justify-between border-b pb-1"><span>Préstamo 1/2</span><b>Q361.90</b></div>
-                            <div class="flex justify-between border-b pb-1"><span>Luz</span><b>Q150.00</b></div>
-                            <div class="flex justify-between border-b pb-1"><span>Agua</span><b>Q120.00</b></div>
-                            <div class="flex justify-between border-b pb-1"><span>Internet</span><b>Q225.00</b></div>
-                            <div class="flex justify-between border-b pb-1"><span>Spotify</span><b>Q80.00</b></div>
-                            <div class="flex justify-between border-b pb-1"><span>Gatos 1/2</span><b>Q300.00</b></div>
-                            <div class="flex justify-between border-b pb-1 italic"><span>Super</span><b>Q500.00</b></div>
-                            <div class="flex justify-between border-b pb-1 italic"><span>Gasolina</span><b>Q300.00</b></div>
-                            <div class="flex justify-between border-b pb-1 italic"><span>Uber</span><b>Q200.00</b></div>
-                            
-                            <div class="flex justify-between pt-4 text-slate-400 font-bold uppercase text-[10px]">
-                                <span>Total Gastos Quincena</span>
-                                <span>- Q3,261.76</span>
-                            </div>
-                            <div class="flex justify-between p-3 bg-emerald-50 rounded-lg border border-emerald-200 font-black text-emerald-700 mt-2 shadow-sm">
-                                <span>SOBRANTE ESPERADO Q1</span>
-                                <span>Q1,438.24</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="flex justify-between items-center bg-emerald-50 p-3 rounded-t-xl border-b-2 border-emerald-500">
-                            <h3 class="font-black text-emerald-900 uppercase italic">Plan Quincena 2</h3>
-                            <div class="text-right"><span class="text-[10px] font-bold block opacity-50">INGRESO ESPERADO</span><b class="text-emerald-600 text-lg">Q3,460.00</b></div>
-                        </div>
-                        <div class="space-y-2 text-sm mt-4">
-                            <div class="flex justify-between border-b pb-1"><span>Renta</span><b>Q500.00</b></div>
-                            <div class="flex justify-between border-b pb-1"><span>Gimnasio</span><b>Q400.00</b></div>
-                            <div class="flex justify-between border-b pb-1"><span>T. BAC</span><b>Q351.70</b></div>
-                            <div class="flex justify-between border-b pb-1"><span>Préstamo 2/2</span><b>Q361.90</b></div>
-                            <div class="flex justify-between border-b pb-1"><span>Gatos 2/2</span><b>Q300.00</b></div>
-                            <div class="flex justify-between border-b pb-1 italic"><span>Super</span><b>Q500.00</b></div>
-                            <div class="flex justify-between border-b pb-1 italic"><span>Gasolina</span><b>Q300.00</b></div>
-                            <div class="flex justify-between border-b pb-1 italic"><span>Uber</span><b>Q200.00</b></div>
-                            
-                            <div class="flex justify-between pt-4 text-slate-400 font-bold uppercase text-[10px]">
-                                <span>Total Gastos Quincena</span>
-                                <span>- Q2,913.60</span>
-                            </div>
-                            <div class="flex justify-between p-3 bg-emerald-50 rounded-lg border border-emerald-200 font-black text-emerald-700 mt-2 shadow-sm">
-                                <span>SOBRANTE ESPERADO Q2</span>
-                                <span>Q546.40</span>
-                            </div>
-                        </div>
+    <main class="p-4 max-w-lg mx-auto">
+        
+        <div id="esperado" class="tab-content active space-y-4">
+            <div class="bg-white rounded-3xl border p-5 shadow-sm">
+                <h3 class="font-black text-indigo-900 text-xs italic mb-4 uppercase">Q1 Esperado (Ingreso: Q4,700)</h3>
+                <div class="space-y-2 text-xs text-slate-600">
+                    <div class="flex justify-between border-b border-slate-50 pb-1"><span>Promerica</span><b>Q1,024.86</b></div>
+                    <div class="flex justify-between border-b border-slate-50 pb-1"><span>Préstamo 1/2</span><b>Q361.90</b></div>
+                    <div class="flex justify-between border-b border-slate-50 pb-1"><span>Luz</span><b>Q150.00</b></div>
+                    <div class="flex justify-between border-b border-slate-50 pb-1"><span>Agua</span><b>Q120.00</b></div>
+                    <div class="flex justify-between border-b border-slate-50 pb-1"><span>Internet</span><b>Q225.00</b></div>
+                    <div class="flex justify-between border-b border-slate-50 pb-1"><span>Spotify</span><b>Q80.00</b></div>
+                    <div class="flex justify-between border-b border-slate-50 pb-1"><span>Gatos 1/2</span><b>Q300.00</b></div>
+                    <div class="flex justify-between border-b border-slate-50 pb-1 italic opacity-60"><span>Super</span><b>Q500.00</b></div>
+                    <div class="flex justify-between border-b border-slate-50 pb-1 italic opacity-60"><span>Gasolina</span><b>Q300.00</b></div>
+                    <div class="flex justify-between border-b border-slate-50 pb-1 italic opacity-60"><span>Uber</span><b>Q200.00</b></div>
+                    <div class="mt-4 p-3 bg-indigo-50 rounded-xl flex justify-between font-black text-indigo-700">
+                        <span>SOBRANTE Q1</span><span>Q1,438.24</span>
                     </div>
                 </div>
             </div>
 
-            <div id="real" class="tab-content space-y-10">
-                <div class="space-y-4">
-                    <div class="flex flex-col md:flex-row justify-between items-center bg-indigo-900 text-white p-4 rounded-2xl shadow-lg">
-                        <div class="flex items-center gap-4">
-                            <span class="text-xs font-bold uppercase text-indigo-300 tracking-widest">Pago Q1:</span>
-                            <input type="number" id="inc-q1" value="4700" oninput="calculateReal()" class="bg-indigo-800 w-24 p-1 rounded font-black text-right outline-none">
-                        </div>
-                        <div class="text-right mt-2 md:mt-0">
-                            <span class="text-[10px] block font-bold text-indigo-300 uppercase">Restante Q1</span>
-                            <span id="rem-q1" class="text-2xl font-black">Q4,700.00</span>
-                        </div>
+            <div class="bg-white rounded-3xl border p-5 shadow-sm">
+                <h3 class="font-black text-emerald-900 text-xs italic mb-4 uppercase">Q2 Esperado (Ingreso: Q3,460)</h3>
+                <div class="space-y-2 text-xs text-slate-600">
+                    <div class="flex justify-between border-b border-slate-50 pb-1"><span>Renta Vivienda</span><b>Q500.00</b></div>
+                    <div class="flex justify-between border-b border-slate-50 pb-1"><span>Gimnasio</span><b>Q400.00</b></div>
+                    <div class="flex justify-between border-b border-slate-50 pb-1"><span>Tarjeta BAC</span><b>Q351.70</b></div>
+                    <div class="flex justify-between border-b border-slate-50 pb-1"><span>Préstamo 2/2</span><b>Q361.90</b></div>
+                    <div class="flex justify-between border-b border-slate-50 pb-1"><span>Gatos 2/2</span><b>Q300.00</b></div>
+                    <div class="flex justify-between border-b border-slate-50 pb-1 italic opacity-60"><span>Super</span><b>Q500.00</b></div>
+                    <div class="flex justify-between border-b border-slate-50 pb-1 italic opacity-60"><span>Gasolina</span><b>Q300.00</b></div>
+                    <div class="flex justify-between border-b border-slate-50 pb-1 italic opacity-60"><span>Uber</span><b>Q200.00</b></div>
+                    <div class="mt-4 p-3 bg-emerald-50 rounded-xl flex justify-between font-black text-emerald-700">
+                        <span>SOBRANTE Q2</span><span>Q546.40</span>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
-                            <thead class="bg-slate-100 text-slate-500 font-bold uppercase">
-                                <tr><th class="p-3">Gasto</th><th class="p-3 text-right">Plan</th><th class="p-3 text-right">Pagado</th><th class="p-3 text-right">Diferencia</th></tr>
-                            </thead>
-                            <tbody id="rows-q1" class="divide-y">
-                                <tr class="r-row" data-exp="1024.86"> <td class="p-3">Tarjeta Promerica</td> <td class="p-3 text-right text-slate-400">1,024.86</td> <td class="p-3 text-right"><input type="number" class="val w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif p-3 text-right font-bold text-slate-300">-</td> </tr>
-                                <tr class="r-row" data-exp="361.90"> <td class="p-3">Préstamo 1/2</td> <td class="p-3 text-right text-slate-400">361.90</td> <td class="p-3 text-right"><input type="number" class="val w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif p-3 text-right font-bold text-slate-300">-</td> </tr>
-                                <tr class="r-row" data-exp="150.00"> <td class="p-3">Luz</td> <td class="p-3 text-right text-slate-400">150.00</td> <td class="p-3 text-right"><input type="number" class="val w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif p-3 text-right font-bold text-slate-300">-</td> </tr>
-                                <tr class="r-row" data-exp="120.00"> <td class="p-3">Agua</td> <td class="p-3 text-right text-slate-400">120.00</td> <td class="p-3 text-right"><input type="number" class="val w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif p-3 text-right font-bold text-slate-300">-</td> </tr>
-                                <tr class="r-row" data-exp="225.00"> <td class="p-3">Internet</td> <td class="p-3 text-right text-slate-400">225.00</td> <td class="p-3 text-right"><input type="number" class="val w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif p-3 text-right font-bold text-slate-300">-</td> </tr>
-                                <tr class="r-row" data-exp="80.00"> <td class="p-3">Spotify</td> <td class="p-3 text-right text-slate-400">80.00</td> <td class="p-3 text-right"><input type="number" class="val w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif p-3 text-right font-bold text-slate-300">-</td> </tr>
-                                <tr class="r-row" data-exp="300.00"> <td class="p-3">Gatos 1/2</td> <td class="p-3 text-right text-slate-400">300.00</td> <td class="p-3 text-right"><input type="number" class="val w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif p-3 text-right font-bold text-slate-300">-</td> </tr>
-                                <tr class="r-row" data-exp="500.00"> <td class="p-3 font-bold italic">Super</td> <td class="p-3 text-right text-slate-400">500.00</td> <td class="p-3 text-right"><input type="number" class="val w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif p-3 text-right font-bold text-slate-300">-</td> </tr>
-                                <tr class="r-row" data-exp="300.00"> <td class="p-3 font-bold italic">Gasolina</td> <td class="p-3 text-right text-slate-400">300.00</td> <td class="p-3 text-right"><input type="number" class="val w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif p-3 text-right font-bold text-slate-300">-</td> </tr>
-                                <tr class="r-row" data-exp="200.00"> <td class="p-3 font-bold italic">Uber</td> <td class="p-3 text-right text-slate-400">200.00</td> <td class="p-3 text-right"><input type="number" class="val w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif p-3 text-right font-bold text-slate-300">-</td> </tr>
-                            </tbody>
-                            <tbody id="extra-q1"></tbody>
-                        </table>
-                    </div>
-                    <button onclick="addExtra('extra-q1', 'r-row-extra')" class="text-[10px] font-black text-indigo-500 hover:text-indigo-700 uppercase tracking-widest py-2">
-                        <i class="fas fa-plus-circle mr-1"></i> Agregar Gasto Extra Q1
-                    </button>
-                </div>
-
-                <div class="space-y-4 border-t pt-8">
-                    <div class="flex flex-col md:flex-row justify-between items-center bg-emerald-900 text-white p-4 rounded-2xl shadow-lg">
-                        <div class="flex items-center gap-4">
-                            <span class="text-xs font-bold uppercase text-emerald-300 tracking-widest">Pago Q2:</span>
-                            <input type="number" id="inc-q2" value="3460" oninput="calculateReal()" class="bg-emerald-800 w-24 p-1 rounded font-black text-right outline-none">
-                        </div>
-                        <div class="text-right mt-2 md:mt-0">
-                            <span class="text-[10px] block font-bold text-emerald-300 uppercase">Restante Q2</span>
-                            <span id="rem-q2" class="text-2xl font-black">Q3,460.00</span>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
-                            <thead class="bg-slate-100 text-slate-500 font-bold uppercase">
-                                <tr><th class="p-3">Gasto</th><th class="p-3 text-right">Plan</th><th class="p-3 text-right">Pagado</th><th class="p-3 text-right">Diferencia</th></tr>
-                            </thead>
-                            <tbody id="rows-q2" class="divide-y">
-                                <tr class="r-row-q2" data-exp="500.00"> <td class="p-3">Renta Vivienda</td> <td class="p-3 text-right text-slate-400">500.00</td> <td class="p-3 text-right"><input type="number" class="val-q2 w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif-q2 p-3 text-right font-bold text-slate-300">-</td> </tr>
-                                <tr class="r-row-q2" data-exp="400.00"> <td class="p-3">Gimnasio</td> <td class="p-3 text-right text-slate-400">400.00</td> <td class="p-3 text-right"><input type="number" class="val-q2 w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif-q2 p-3 text-right font-bold text-slate-300">-</td> </tr>
-                                <tr class="r-row-q2" data-exp="351.70"> <td class="p-3">Tarjeta BAC</td> <td class="p-3 text-right text-slate-400">351.70</td> <td class="p-3 text-right"><input type="number" class="val-q2 w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif-q2 p-3 text-right font-bold text-slate-300">-</td> </tr>
-                                <tr class="r-row-q2" data-exp="361.90"> <td class="p-3">Préstamo 2/2</td> <td class="p-3 text-right text-slate-400">361.90</td> <td class="p-3 text-right"><input type="number" class="val-q2 w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif-q2 p-3 text-right font-bold text-slate-300">-</td> </tr>
-                                <tr class="r-row-q2" data-exp="300.00"> <td class="p-3">Gatos 2/2</td> <td class="p-3 text-right text-slate-400">300.00</td> <td class="p-3 text-right"><input type="number" class="val-q2 w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif-q2 p-3 text-right font-bold text-slate-300">-</td> </tr>
-                                <tr class="r-row-q2" data-exp="500.00"> <td class="p-3 font-bold italic">Super</td> <td class="p-3 text-right text-slate-400">500.00</td> <td class="p-3 text-right"><input type="number" class="val-q2 w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif-q2 p-3 text-right font-bold text-slate-300">-</td> </tr>
-                                <tr class="r-row-q2" data-exp="300.00"> <td class="p-3 font-bold italic">Gasolina</td> <td class="p-3 text-right text-slate-400">300.00</td> <td class="p-3 text-right"><input type="number" class="val-q2 w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif-q2 p-3 text-right font-bold text-slate-300">-</td> </tr>
-                                <tr class="r-row-q2" data-exp="200.00"> <td class="p-3 font-bold italic">Uber</td> <td class="p-3 text-right text-slate-400">200.00</td> <td class="p-3 text-right"><input type="number" class="val-q2 w-24 p-1 border rounded text-right" oninput="calculateReal()"></td> <td class="dif-q2 p-3 text-right font-bold text-slate-300">-</td> </tr>
-                            </tbody>
-                            <tbody id="extra-q2"></tbody>
-                        </table>
-                    </div>
-                    <button onclick="addExtra('extra-q2', 'r-row-extra-q2')" class="text-[10px] font-black text-emerald-600 hover:text-emerald-800 uppercase tracking-widest py-2">
-                        <i class="fas fa-plus-circle mr-1"></i> Agregar Gasto Extra Q2
-                    </button>
-                </div>
-
-                <div class="bg-slate-900 text-white p-6 rounded-3xl flex justify-between items-center shadow-2xl">
-                    <div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Diferencia Acumulada</p><p id="total-diff" class="text-2xl font-black text-emerald-400">Q0.00</p></div>
-                    <i class="fas fa-chart-line text-3xl text-slate-700"></i>
-                </div>
-            </div>
-
-            <div id="ahorro" class="tab-content text-center py-10 space-y-12">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                    <div class="p-8 bg-slate-50 border-2 border-slate-200 rounded-3xl"><p class="text-[10px] font-black text-slate-400 uppercase mb-2">Meta Programada</p><p class="text-4xl font-black text-slate-900">Q1,984.64</p></div>
-                    <div class="p-8 bg-indigo-900 text-white rounded-3xl shadow-2xl"><p class="text-[10px] font-black text-indigo-300 uppercase mb-2">Ahorro Real</p><p id="save-final" class="text-4xl font-black text-emerald-400">Q0.00</p></div>
-                </div>
-                <div class="max-w-xl mx-auto space-y-4"><p id="status-txt" class="text-lg font-bold text-slate-400">Completa tus datos reales</p><div class="w-full bg-slate-100 rounded-full h-8 p-1"><div id="bar" class="h-full bg-emerald-500 rounded-full w-0 transition-all duration-700"></div></div></div>
-            </div>
-
-            <div id="historial" class="tab-content">
-                <div class="overflow-x-auto rounded-2xl border">
-                    <table class="w-full text-sm">
-                        <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-400 border-b"><tr><th class="p-4 text-left">Mes</th><th class="p-4 text-right">Ingresos</th><th class="p-4 text-right">Egresos</th><th class="p-4 text-right">Ahorro</th><th class="p-4 text-center">Acción</th></tr></thead>
-                        <tbody id="history-rows" class="divide-y divide-slate-100 font-mono"></tbody>
-                        <tfoot id="history-foot" class="bg-indigo-50 font-black"></tfoot>
-                    </table>
                 </div>
             </div>
         </div>
-    </div>
+
+        <div id="real" class="tab-content space-y-4">
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-white p-3 rounded-2xl border">
+                    <label class="text-[9px] font-black text-slate-400 uppercase">Ingreso Q1</label>
+                    <input type="number" id="inc-q1" value="4700" oninput="calculateReal()" class="w-full font-black text-indigo-600 outline-none">
+                </div>
+                <div class="bg-white p-3 rounded-2xl border text-right">
+                    <label class="text-[9px] font-black text-slate-400 uppercase text-right block">Ingreso Q2</label>
+                    <input type="number" id="inc-q2" value="3460" oninput="calculateReal()" class="w-full font-black text-emerald-600 outline-none text-right">
+                </div>
+            </div>
+
+            <div id="rows-q1" class="space-y-2"></div>
+            <div id="extra-q1"></div>
+            <button onclick="addExtra('extra-q1', 'r-row-extra')" class="w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-[10px] font-black text-indigo-400 uppercase tracking-widest">+ Extra Q1</button>
+
+            <div class="h-4"></div>
+
+            <div id="rows-q2" class="space-y-2"></div>
+            <div id="extra-q2"></div>
+            <button onclick="addExtra('extra-q2', 'r-row-extra-q2')" class="w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-[10px] font-black text-emerald-400 uppercase tracking-widest">+ Extra Q2</button>
+            
+            <div class="bg-slate-900 text-white p-5 rounded-3xl mt-6 flex justify-between items-center shadow-lg">
+                <div>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase">Total Real Restante</p>
+                    <p id="save-final-real" class="text-2xl font-black text-emerald-400">Q0.00</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[9px] font-bold text-slate-400 uppercase">Diferencia Plan</p>
+                    <p id="total-diff" class="text-lg font-black text-white">Q0.00</p>
+                </div>
+            </div>
+            <span id="rem-q1" class="hidden"></span><span id="rem-q2" class="hidden"></span>
+        </div>
+
+        <div id="ahorro" class="tab-content space-y-8 py-6 text-center">
+            <div class="bg-indigo-900 p-8 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
+                <div class="relative z-10">
+                    <p class="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-2">Ahorro Real Mensual</p>
+                    <p id="save-final-tab" class="text-5xl font-black text-emerald-400">Q0.00</p>
+                    <p class="mt-4 text-xs font-bold opacity-60 italic">Meta base: Q1,984.64</p>
+                </div>
+                <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-indigo-500 rounded-full opacity-20"></div>
+            </div>
+            <div class="px-4">
+                <div class="w-full bg-slate-200 h-8 rounded-full p-1.5 shadow-inner">
+                    <div id="bar" class="h-full bg-emerald-500 rounded-full w-0 transition-all duration-1000"></div>
+                </div>
+                <p id="status-txt" class="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-tighter">Calculando progreso...</p>
+            </div>
+        </div>
+
+        <div id="historial" class="tab-content space-y-4">
+            <div class="flex justify-between items-end px-2 pt-4">
+                <h3 class="text-lg font-black text-slate-800">Historial Anual</h3>
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Gestión 2026</span>
+            </div>
+            
+            <div id="history-rows" class="space-y-3">
+                </div>
+
+            <div id="history-foot" class="mt-6 p-6 bg-indigo-950 rounded-3xl text-white shadow-xl">
+                </div>
+        </div>
+
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-3 z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+        <button onclick="openTab(event, 'esperado')" class="tab-btn active-tab-btn flex flex-col items-center gap-1 flex-1 text-slate-400 transition-all">
+            <i class="fas fa-calendar-check text-lg"></i>
+            <span class="text-[9px] font-black uppercase">Plan</span>
+        </button>
+        <button onclick="openTab(event, 'real')" class="tab-btn flex flex-col items-center gap-1 flex-1 text-slate-400 transition-all">
+            <i class="fas fa-pen-nib text-lg"></i>
+            <span class="text-[9px] font-black uppercase">Real</span>
+        </button>
+        <button onclick="openTab(event, 'ahorro')" class="tab-btn flex flex-col items-center gap-1 flex-1 text-slate-400 transition-all">
+            <i class="fas fa-piggy-bank text-lg"></i>
+            <span class="text-[9px] font-black uppercase">Metas</span>
+        </button>
+        <button onclick="openTab(event, 'historial')" class="tab-btn flex flex-col items-center gap-1 flex-1 text-slate-400 transition-all">
+            <i class="fas fa-chart-pie text-lg"></i>
+            <span class="text-[9px] font-black uppercase">Anual</span>
+        </button>
+    </nav>
 
     <script>
+        const dataQ1 = [
+            {n: "Tarjeta Promerica", v: 1024.86}, {n: "Préstamo 1/2", v: 361.90}, {n: "Luz", v: 150.00},
+            {n: "Agua", v: 120.00}, {n: "Internet", v: 225.00}, {n: "Spotify", v: 80.00},
+            {n: "Gatos 1/2", v: 300.00}, {n: "Super", v: 500.00}, {n: "Gasolina", v: 300.00}, {n: "Uber", v: 200.00}
+        ];
+        const dataQ2 = [
+            {n: "Renta Vivienda", v: 500.00}, {n: "Gimnasio", v: 400.00}, {n: "Tarjeta BAC", v: 351.70},
+            {n: "Préstamo 2/2", v: 361.90}, {n: "Gatos 2/2", v: 300.00}, {n: "Super", v: 500.00},
+            {n: "Gasolina", v: 300.00}, {n: "Uber", v: 200.00}
+        ];
+
+        function renderRows() {
+            const r1 = document.getElementById('rows-q1'), r2 = document.getElementById('rows-q2');
+            r1.innerHTML = dataQ1.map(item => createInputRow(item, 'r-row', 'val', 'dif')).join('');
+            r2.innerHTML = dataQ2.map(item => createInputRow(item, 'r-row-q2', 'val-q2', 'dif-q2')).join('');
+        }
+
+        function createInputRow(item, rowClass, valClass, difClass) {
+            return `
+            <div class="${rowClass} bg-white p-3 rounded-2xl border border-slate-100 flex items-center justify-between" data-exp="${item.v}">
+                <div class="flex-1">
+                    <p class="text-[11px] font-bold text-slate-800">${item.n}</p>
+                    <p class="text-[9px] text-slate-400">Plan: Q${item.v.toFixed(2)}</p>
+                </div>
+                <input type="number" class="${valClass} w-20 bg-slate-50 border-none p-2 rounded-xl text-right font-black text-xs outline-none focus:ring-2 focus:ring-indigo-100" oninput="calculateReal()" placeholder="0.00">
+                <div class="${difClass} w-14 text-right text-[9px] font-black text-slate-300 ml-1">-</div>
+            </div>`;
+        }
+
         function openTab(evt, tabName) {
             document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
-            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active-tab-btn", "text-indigo-600"));
             document.getElementById(tabName).classList.add("active");
-            evt.currentTarget.classList.add("active");
+            evt.currentTarget.classList.add("active-tab-btn", "text-indigo-600");
             if(tabName === 'historial') updateHistory();
         }
 
-        function addExtra(containerId, rowClass, name = "", val = "") {
-            const container = document.getElementById(containerId);
-            const label = name || prompt("Nombre del gasto extra:");
-            if(!label) return;
-            const tr = document.createElement('tr');
-            tr.className = `${rowClass} bg-amber-50/50`;
-            tr.dataset.exp = "0.00";
-            tr.innerHTML = `<td class="p-3 text-amber-700 font-medium italic"><i class="fas fa-exclamation-triangle mr-2 text-[10px]"></i>${label}</td><td class="p-3 text-right text-slate-300">0.00</td><td class="p-3 text-right"><input type="number" class="extra-val w-24 p-1 border border-amber-200 rounded text-right bg-white" oninput="calculateReal()" value="${val}"></td><td class="dif-extra p-3 text-right font-bold text-slate-300">-</td>`;
-            container.appendChild(tr);
-            calculateReal();
-        }
-
         function calculateGroup(rowClass, valClass, diffClass) {
-            let totalPagado = 0, totalDiff = 0;
+            let pagado = 0, diff = 0;
             document.querySelectorAll('.' + rowClass).forEach(row => {
-                const plan = parseFloat(row.dataset.exp);
-                const input = row.querySelector(valClass.startsWith('.') ? valClass : '.' + valClass);
-                const diffCell = row.querySelector(diffClass.startsWith('.') ? diffClass : '.' + diffClass);
-                const pagado = parseFloat(input.value) || 0;
+                const plan = parseFloat(row.dataset.exp), input = row.querySelector('.' + valClass), cell = row.querySelector('.' + diffClass);
+                const val = parseFloat(input.value) || 0;
                 if (input.value !== "") {
-                    totalPagado += pagado;
-                    const d = plan - pagado;
-                    totalDiff += d;
-                    diffCell.innerText = (d >= 0 ? '+' : '') + d.toFixed(2);
-                    diffCell.className = `${diffClass} p-3 text-right font-bold ` + (d >= 0 ? 'text-green-600' : 'text-red-600');
-                } else { diffCell.innerText = "-"; diffCell.className = `${diffClass} p-3 text-right text-slate-300`; }
+                    pagado += val; const d = plan - val; diff += d;
+                    cell.innerText = (d >= 0 ? '+' : '') + d.toFixed(2);
+                    cell.className = `${diffClass} w-14 text-right text-[9px] font-black ` + (d >= 0 ? 'text-emerald-500' : 'text-red-500');
+                } else { cell.innerText = "-"; cell.className = `${diffClass} w-14 text-right text-slate-300`; }
             });
-            return { pagado: totalPagado, diff: totalDiff };
+            return { pagado, diff };
         }
 
         function calculateReal() {
-            const inc1 = parseFloat(document.getElementById('inc-q1').value) || 0;
-            const inc2 = parseFloat(document.getElementById('inc-q2').value) || 0;
-            const q1B = calculateGroup('r-row', 'val', 'dif'), q2B = calculateGroup('r-row-q2', 'val-q2', 'dif-q2');
-            const q1E = calculateGroup('r-row-extra', '.extra-val', '.dif-extra'), q2E = calculateGroup('r-row-extra-q2', '.extra-val', '.dif-extra');
-            const t1 = q1B.pagado + q1E.pagado, t2 = q2B.pagado + q2E.pagado;
-            const rem1 = inc1 - t1, rem2 = inc2 - t2;
-            const ahorro = rem1 + rem2;
-            document.getElementById('rem-q1').innerText = 'Q' + rem1.toLocaleString('en-US',{minF:2});
-            document.getElementById('rem-q2').innerText = 'Q' + rem2.toLocaleString('en-US',{minF:2});
-            document.getElementById('total-diff').innerText = 'Q' + (q1B.diff + q1E.diff + q2B.diff + q2E.diff).toFixed(2);
-            document.getElementById('save-final').innerText = 'Q' + ahorro.toLocaleString('en-US',{minF:2});
+            const inc1 = parseFloat(document.getElementById('inc-q1').value) || 0, inc2 = parseFloat(document.getElementById('inc-q2').value) || 0;
+            const q1 = calculateGroup('r-row', 'val', 'dif'), q2 = calculateGroup('r-row-q2', 'val-q2', 'dif-q2');
+            const q1E = calculateGroup('r-row-extra', 'extra-val', 'dif-extra'), q2E = calculateGroup('r-row-extra-q2', 'extra-val', 'dif-extra');
+            
+            const totalExp = q1.pagado + q2.pagado + q1E.pagado + q2E.pagado;
+            const totalInc = inc1 + inc2;
+            const ahorro = totalInc - totalExp;
+
+            document.getElementById('save-final-real').innerText = 'Q' + ahorro.toLocaleString('en-US',{minimumFractionDigits:2});
+            document.getElementById('save-final-tab').innerText = 'Q' + ahorro.toLocaleString('en-US',{minimumFractionDigits:2});
+            document.getElementById('total-diff').innerText = 'Q' + (q1.diff + q2.diff + q1E.diff + q2E.diff).toFixed(2);
+            
             const perc = Math.min((ahorro / 1984.64) * 100, 100);
             document.getElementById('bar').style.width = (perc > 0 ? perc : 0) + '%';
-            return { inc: inc1+inc2, exp: t1+t2, save: ahorro };
+            document.getElementById('status-txt').innerText = ahorro >= 1984 ? "¡META LOGRADA!" : "PENDIENTE DE COMPLETAR";
+            
+            return { inc: totalInc, exp: totalExp, save: ahorro };
+        }
+
+        function addExtra(containerId, rowClass, name = "", val = "") {
+            const label = name || prompt("Gasto extra:");
+            if(!label) return;
+            const div = document.createElement('div');
+            div.className = `${rowClass} bg-amber-50 p-3 rounded-2xl border border-amber-100 flex items-center justify-between mt-2`;
+            div.dataset.exp = "0.00";
+            div.innerHTML = `<div class="flex-1"><p class="text-[11px] font-bold text-amber-800 italic">${label}</p></div>
+                <input type="number" class="extra-val w-20 bg-white p-2 rounded-xl text-right font-black text-xs outline-none" oninput="calculateReal()" value="${val}">
+                <div class="dif-extra w-14 text-right text-[9px] font-black text-slate-300 ml-1">-</div>`;
+            document.getElementById(containerId).appendChild(div);
+            calculateReal();
         }
 
         function saveCurrentMonth() {
             const m = document.getElementById('global-month').value;
             const res = calculateReal();
-            const ext1 = Array.from(document.querySelectorAll('.r-row-extra')).map(row => ({ n: row.cells[0].innerText.trim(), v: row.querySelector('.extra-val').value }));
-            const ext2 = Array.from(document.querySelectorAll('.r-row-extra-q2')).map(row => ({ n: row.cells[0].innerText.trim(), v: row.querySelector('.extra-val').value }));
-            const state = { m, inc1: document.getElementById('inc-q1').value, inc2: document.getElementById('inc-q2').value, v1: Array.from(document.querySelectorAll('#rows-q1 .val')).map(i => i.value), v2: Array.from(document.querySelectorAll('#rows-q2 .val-q2')).map(i => i.value), ext1, ext2, summary: res };
+            const state = { 
+                m, 
+                inc1: document.getElementById('inc-q1').value, 
+                inc2: document.getElementById('inc-q2').value, 
+                v1: Array.from(document.querySelectorAll('#rows-q1 .val')).map(i => i.value), 
+                v2: Array.from(document.querySelectorAll('#rows-q2 .val-q2')).map(i => i.value),
+                ext1: Array.from(document.querySelectorAll('.r-row-extra')).map(row => ({ n: row.querySelector('p').innerText, v: row.querySelector('.extra-val').value })),
+                ext2: Array.from(document.querySelectorAll('.r-row-extra-q2')).map(row => ({ n: row.querySelector('p').innerText, v: row.querySelector('.extra-val').value })),
+                summary: res 
+            };
             localStorage.setItem('f_2026_final_' + m, JSON.stringify(state));
-            alert('¡Guardado!'); updateHistory();
+            alert('¡' + m + ' guardado con éxito!');
         }
 
         function changeMonth() {
             const m = document.getElementById('global-month').value;
-            const saved = localStorage.getItem('f_2026_final_' + m);
+            document.getElementById('display-month').innerText = m;
             document.getElementById('extra-q1').innerHTML = ""; document.getElementById('extra-q2').innerHTML = "";
             document.querySelectorAll('input[type="number"]').forEach(i => i.value = "");
-            document.getElementById('inc-q1').value = 4700; document.getElementById('inc-q2').value = 3460;
+            const saved = localStorage.getItem('f_2026_final_' + m);
             if(saved) {
                 const s = JSON.parse(saved);
                 document.getElementById('inc-q1').value = s.inc1; document.getElementById('inc-q2').value = s.inc2;
@@ -287,25 +290,47 @@
                 document.querySelectorAll('#rows-q2 .val-q2').forEach((input, i) => input.value = s.v2[i]);
                 s.ext1.forEach(e => addExtra('extra-q1', 'r-row-extra', e.n, e.v));
                 s.ext2.forEach(e => addExtra('extra-q2', 'r-row-extra-q2', e.n, e.v));
+            } else {
+                document.getElementById('inc-q1').value = 4700; document.getElementById('inc-q2').value = 3460;
             }
             calculateReal();
         }
 
         function updateHistory() {
-            const body = document.getElementById('history-rows'), foot = document.getElementById('history-foot');
-            body.innerHTML = ""; foot.innerHTML = "";
+            const container = document.getElementById('history-rows'), foot = document.getElementById('history-foot');
+            container.innerHTML = "";
             let sI = 0, sE = 0, sS = 0;
             ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"].forEach(m => {
                 const data = localStorage.getItem('f_2026_final_' + m);
                 if(data) {
                     const s = JSON.parse(data); sI += s.summary.inc; sE += s.summary.exp; sS += s.summary.save;
-                    body.innerHTML += `<tr><td class="p-4 font-black">${s.m}</td><td class="p-4 text-right">Q${s.summary.inc.toFixed(2)}</td><td class="p-4 text-right text-red-400">Q${s.summary.exp.toFixed(2)}</td><td class="p-4 text-right font-black text-green-600">Q${s.summary.save.toFixed(2)}</td><td class="p-4 text-center"><button onclick="deleteM('${m}')" class="text-slate-200 hover:text-red-500"><i class="fas fa-trash"></i></button></td></tr>`;
+                    container.innerHTML += `
+                    <div class="bg-white rounded-3xl border shadow-sm overflow-hidden">
+                        <div class="bg-slate-50 px-5 py-3 border-b flex justify-between items-center">
+                            <span class="font-black text-slate-800 uppercase text-xs">${s.m}</span>
+                            <button onclick="deleteM('${m}')" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-can text-xs"></i></button>
+                        </div>
+                        <div class="p-5 grid grid-cols-3 gap-2 text-center">
+                            <div>
+                                <p class="text-[8px] font-bold text-slate-400 uppercase mb-1">Ingresos</p>
+                                <p class="text-xs font-black text-slate-700">Q${s.summary.inc.toFixed(2)}</p>
+                            </div>
+                            <div>
+                                <p class="text-[8px] font-bold text-slate-400 uppercase mb-1">Gastos</p>
+                                <p class="text-xs font-black text-red-500">Q${s.summary.exp.toFixed(2)}</p>
+                            </div>
+                            <div>
+                                <p class="text-[8px] font-bold text-slate-400 uppercase mb-1">Ahorro</p>
+                                <p class="text-xs font-black text-emerald-600">Q${s.summary.save.toFixed(2)}</p>
+                            </div>
+                        </div>
+                    </div>`;
                 }
             });
-            if(sI > 0) foot.innerHTML = `<tr><td class="p-4 uppercase">TOTAL ANUAL</td><td class="p-4 text-right">Q${sI.toFixed(2)}</td><td class="p-4 text-right text-red-500">Q${sE.toFixed(2)}</td><td class="p-4 text-right text-indigo-900">Q${sS.toFixed(2)}</td><td></td></tr>`;
+            foot.innerHTML = sI > 0 ? `<div class="flex justify-between items-center"><span class="text-[10px] font-bold opacity-70 uppercase">Total Ahorrado 2026</span><span class="text-2xl font-black">Q${sS.toFixed(2)}</span></div>` : `<p class="text-center text-xs opacity-50">No hay datos guardados aún.</p>`;
         }
-        function deleteM(m) { if(confirm('¿Borrar?')) { localStorage.removeItem('f_2026_final_'+m); updateHistory(); } }
-        window.onload = changeMonth;
+        function deleteM(m) { if(confirm('¿Eliminar ' + m + '?')) { localStorage.removeItem('f_2026_final_'+m); updateHistory(); } }
+        window.onload = () => { renderRows(); changeMonth(); };
     </script>
 </body>
 </html>
