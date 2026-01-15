@@ -14,7 +14,10 @@
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .active-tab-btn { color: #007AFF !important; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .text-overspent { color: #FF3B30 !important; } /* Rojo iOS para sobregiro */
+        .text-overspent { color: #FF3B30 !important; }
+        /* Modal Styles */
+        #cloud-modal { transition: opacity 0.2s; }
+        #cloud-modal.hidden { display: none; }
     </style>
 </head>
 <body>
@@ -22,7 +25,7 @@
     <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 p-4">
         <div class="max-w-lg mx-auto flex justify-between items-center">
             <div class="flex items-center gap-4">
-                <button onclick="syncCloud()" class="text-indigo-600 bg-indigo-50 w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform">
+                <button onclick="toggleCloudMenu(true)" class="text-indigo-600 bg-indigo-50 w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform">
                     <i class="fas fa-cloud-arrow-up"></i>
                 </button>
                 <select id="global-month" onchange="changeMonth()" class="text-2xl font-black bg-transparent outline-none text-slate-800 appearance-none">
@@ -38,9 +41,26 @@
         </div>
     </header>
 
+    <div id="cloud-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-6">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl text-center space-y-4 animate-[slideUp_0.2s_ease-out]">
+            <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-xl"><i class="fas fa-cloud"></i></div>
+            <h3 class="font-black text-lg text-slate-800">Sincronización</h3>
+            <p class="text-xs text-slate-400 font-bold mb-4">Elige una acción para tus datos</p>
+            
+            <button onclick="runCloudAction('GUARDAR')" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+                <i class="fas fa-upload"></i> Subir a Nube
+            </button>
+            
+            <button onclick="runCloudAction('DESCARGAR')" class="w-full py-3 bg-white border-2 border-slate-100 text-slate-600 rounded-xl font-bold active:scale-95 transition-transform flex items-center justify-center gap-2">
+                <i class="fas fa-download"></i> Descargar
+            </button>
+
+            <button onclick="toggleCloudMenu(false)" class="text-red-500 font-bold text-xs mt-4 uppercase tracking-widest p-2">Cancelar</button>
+        </div>
+    </div>
+
     <main class="p-5 max-w-lg mx-auto">
         <div id="esperado" class="tab-content active space-y-6">
-            
             <div class="space-y-3">
                 <div class="ios-card p-4 bg-indigo-50 border border-indigo-100 flex justify-between items-center">
                     <div>
@@ -164,15 +184,12 @@
             };
             renderPlan(itemsQ1, 'list-plan-q1');
             renderPlan(itemsQ2, 'list-plan-q2');
-            
-            // Render Real con IDs únicos para sincronización
             document.getElementById('rows-q1').innerHTML = itemsQ1.map((i, idx) => createInputRow(i, idx, 'q1')).join('');
             document.getElementById('rows-q2').innerHTML = itemsQ2.map((i, idx) => createInputRow(i, idx, 'q2')).join('');
             calculateReal();
         }
 
         function createInputRow(item, idx, prefix) {
-            // Se agrega ID único al div contenedor para encontrarlo rápido
             return `<div id="real-row-${prefix}-${idx}" class="r-row-${prefix} ios-card p-4 flex items-center justify-between mb-2" data-exp="${item.v}">
                 <div class="flex items-center gap-3"><i class="fas ${icons[item.n] || 'fa-tag'} text-slate-300"></i><div><p class="text-sm font-bold text-slate-800">${item.n}</p><p class="plan-label text-[9px] text-slate-400 uppercase">Plan: Q${item.v.toFixed(2)}</p></div></div>
                 <div class="text-right"><input type="number" inputmode="decimal" class="val-input w-24 text-right font-black text-indigo-600 border-b border-slate-100 outline-none bg-transparent" oninput="calculateReal()" placeholder="0.00"><p class="dif-lbl text-[9px] font-black text-slate-300 mt-1">Q0.00</p></div></div>`;
@@ -180,20 +197,11 @@
 
         function updatePlanValue(container, i, val) {
             const num = parseFloat(val) || 0;
-            // 1. Actualizar memoria
-            if(container === 'list-plan-q1') itemsQ1[i].v = num;
-            else itemsQ2[i].v = num;
-            localStorage.setItem('conf_q1', JSON.stringify(itemsQ1));
-            localStorage.setItem('conf_q2', JSON.stringify(itemsQ2));
-
-            // 2. Sincronizar INMEDIATAMENTE la pestaña Real (Dom)
+            if(container === 'list-plan-q1') itemsQ1[i].v = num; else itemsQ2[i].v = num;
+            localStorage.setItem('conf_q1', JSON.stringify(itemsQ1)); localStorage.setItem('conf_q2', JSON.stringify(itemsQ2));
             const prefix = container === 'list-plan-q1' ? 'q1' : 'q2';
             const realRow = document.getElementById(`real-row-${prefix}-${i}`);
-            if(realRow) {
-                realRow.dataset.exp = num; // Actualiza el límite oculto
-                realRow.querySelector('.plan-label').innerText = 'Plan: ' + f(num); // Actualiza texto visible
-            }
-
+            if(realRow) { realRow.dataset.exp = num; realRow.querySelector('.plan-label').innerText = 'Plan: ' + f(num); }
             calculateReal();
         }
 
@@ -206,106 +214,70 @@
         }
 
         function calculateReal() {
-            // Cálculos Plan
             const pI1 = parseFloat(document.getElementById('p-inc-q1').value) || 0;
             const pI2 = parseFloat(document.getElementById('p-inc-q2').value) || 0;
-            const sP1 = itemsQ1.reduce((a, b) => a + b.v, 0);
-            const sP2 = itemsQ2.reduce((a, b) => a + b.v, 0);
-
-            document.getElementById('p-save-q1').innerText = f(pI1 - sP1);
-            document.getElementById('p-save-q2').innerText = f(pI2 - sP2);
-            document.getElementById('p-inc-total').innerText = f(pI1 + pI2);
-            document.getElementById('p-exp-total').innerText = f(sP1 + sP2);
+            const sP1 = itemsQ1.reduce((a, b) => a + b.v, 0); const sP2 = itemsQ2.reduce((a, b) => a + b.v, 0);
+            document.getElementById('p-save-q1').innerText = f(pI1 - sP1); document.getElementById('p-save-q2').innerText = f(pI2 - sP2);
+            document.getElementById('p-inc-total').innerText = f(pI1 + pI2); document.getElementById('p-exp-total').innerText = f(sP1 + sP2);
             const tPS = (pI1 - sP1) + (pI2 - sP2);
-            document.getElementById('p-save-total').innerText = f(tPS);
-            document.getElementById('save-plan-total-tab').innerText = f(tPS);
+            document.getElementById('p-save-total').innerText = f(tPS); document.getElementById('save-plan-total-tab').innerText = f(tPS);
 
-            // Cálculos Real
-            const rI1 = parseFloat(document.getElementById('inc-q1').value) || 0;
-            const rI2 = parseFloat(document.getElementById('inc-q2').value) || 0;
-
+            const rI1 = parseFloat(document.getElementById('inc-q1').value) || 0; const rI2 = parseFloat(document.getElementById('inc-q2').value) || 0;
             let pg1 = 0, pg2 = 0, fl1 = 0, fl2 = 0, comp = true;
             
             const proc = (prefix, isQ1) => {
                 document.querySelectorAll(`.r-row-${prefix}`).forEach(row => {
-                    const pl = parseFloat(row.dataset.exp); // Lee el plan actualizado
-                    const inp = row.querySelector('.val-input');
-                    const cl = row.querySelector('.dif-lbl');
-                    
+                    const pl = parseFloat(row.dataset.exp), inp = row.querySelector('.val-input'), cl = row.querySelector('.dif-lbl');
                     if(inp.value !== "") {
-                        const v = parseFloat(inp.value); 
-                        if(isQ1) pg1 += v; else pg2 += v;
-                        
-                        const d = pl - v; // Diferencia: Plan - Real
-                        
-                        // SEMÁFORO ESTRICTO
-                        if(d < 0) {
-                            // Me pasé: Rojo
-                            cl.innerText = '-' + f(Math.abs(d));
-                            cl.className = "dif-lbl text-[9px] font-black text-red-500 mt-1";
-                            inp.classList.add('text-overspent'); // Pone el input en ROJO
-                            inp.classList.remove(isQ1 ? 'text-indigo-600' : 'text-emerald-600');
-                        } else {
-                            // Ahorré o igual: Verde/Azul
-                            cl.innerText = '+' + f(Math.abs(d));
-                            cl.className = "dif-lbl text-[9px] font-black text-emerald-500 mt-1";
-                            inp.classList.remove('text-overspent');
-                            inp.classList.add(isQ1 ? 'text-indigo-600' : 'text-emerald-600');
-                        }
-
-                    } else { 
-                        comp = false; 
-                        if(isQ1) fl1 += pl; else fl2 += pl; 
-                        cl.innerText = "Q0.00"; 
-                        cl.className = "dif-lbl text-slate-300 text-[9px] font-black mt-1";
-                        inp.classList.remove('text-overspent');
-                        inp.classList.add(isQ1 ? 'text-indigo-600' : 'text-emerald-600');
-                    }
+                        const v = parseFloat(inp.value); if(isQ1) pg1 += v; else pg2 += v;
+                        const d = pl - v;
+                        if(d < 0) { cl.innerText = '-' + f(Math.abs(d)); cl.className = "dif-lbl text-[9px] font-black text-red-500 mt-1"; inp.classList.add('text-overspent'); inp.classList.remove(isQ1 ? 'text-indigo-600' : 'text-emerald-600'); }
+                        else { cl.innerText = '+' + f(Math.abs(d)); cl.className = "dif-lbl text-[9px] font-black text-emerald-500 mt-1"; inp.classList.remove('text-overspent'); inp.classList.add(isQ1 ? 'text-indigo-600' : 'text-emerald-600'); }
+                    } else { comp = false; if(isQ1) fl1 += pl; else fl2 += pl; cl.innerText = "Q0.00"; cl.className = "dif-lbl text-slate-300 text-[9px] font-black mt-1"; inp.classList.remove('text-overspent'); inp.classList.add(isQ1 ? 'text-indigo-600' : 'text-emerald-600'); }
                 });
             };
-            
-            proc('q1', true); 
-            proc('q2', false);
+            proc('q1', true); proc('q2', false);
 
             const w1 = rI1 - pg1; const w2 = rI2 - pg2;
-            document.getElementById('wallet-q1').innerText = f(w1);
-            document.getElementById('wallet-q2').innerText = f(w2);
-            document.getElementById('rest-q1').innerText = f(w1 - fl1);
-            document.getElementById('rest-q2').innerText = f(w2 - fl2);
+            document.getElementById('wallet-q1').innerText = f(w1); document.getElementById('wallet-q2').innerText = f(w2);
+            document.getElementById('rest-q1').innerText = f(w1 - fl1); document.getElementById('rest-q2').innerText = f(w2 - fl2);
 
             if(comp) {
                 const final = w1 + w2; document.getElementById('save-final-tab').innerText = f(final);
-                document.getElementById('bar').style.width = Math.max(0, Math.min((final/tPS)*100, 100)) + '%';
-                document.getElementById('status-txt').innerText = "Mes Completado";
-            } else {
-                document.getElementById('save-final-tab').innerText = "PENDIENTE";
-                document.getElementById('bar').style.width = "0%";
-                document.getElementById('status-txt').innerText = "Faltan datos";
-            }
+                document.getElementById('bar').style.width = Math.max(0, Math.min((final/tPS)*100, 100)) + '%'; document.getElementById('status-txt').innerText = "Mes Completado";
+            } else { document.getElementById('save-final-tab').innerText = "PENDIENTE"; document.getElementById('bar').style.width = "0%"; document.getElementById('status-txt').innerText = "Faltan datos"; }
             return { inc: rI1+rI2, exp: pg1+pg2, save: (comp ? w1+w2 : 0) };
         }
 
         function openTab(evt, name) {
             document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
             document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active-tab-btn"));
-            document.getElementById(name).classList.add("active");
-            evt.currentTarget.classList.add("active-tab-btn");
+            document.getElementById(name).classList.add("active"); evt.currentTarget.classList.add("active-tab-btn");
             if(name === 'historial') updateHistory();
         }
 
-        async function syncCloud() {
+        // --- GESTIÓN DE NUBE (NUEVA) ---
+        function toggleCloudMenu(show) {
+            const el = document.getElementById('cloud-modal');
+            if(show) { el.classList.remove('hidden'); } else { el.classList.add('hidden'); }
+        }
+
+        async function runCloudAction(action) {
+            toggleCloudMenu(false); // Cierra modal
             let token = localStorage.getItem('gh_token_f2026');
-            if(!token) { token = prompt("Token:"); if(token) localStorage.setItem('gh_token_f2026', token); else return; }
+            if(!token) { token = prompt("Pega tu Token de GitHub una sola vez:"); if(token) localStorage.setItem('gh_token_f2026', token); else return; }
+            
             try {
                 const res = await fetch('https://api.github.com/gists', { headers: { 'Authorization': `token ${token}` } });
                 const gists = await res.json();
                 const myGist = gists.find(g => g.description === "Backup Finanzas 2026");
-                const accion = prompt("Escribe 'DESCARGAR' o 'GUARDAR':", "GUARDAR");
-                if (accion && accion.toUpperCase() === "DESCARGAR" && myGist) {
+
+                if (action === "DESCARGAR") {
+                    if(!myGist) { alert("No se encontró respaldo."); return; }
                     const f = await fetch(myGist.files["finanzas.json"].raw_url);
                     const d = await f.json(); Object.keys(d).forEach(k => localStorage.setItem(k, d[k]));
-                    alert("✅ Cargado."); location.reload(); return;
-                } else if (accion && accion.toUpperCase() === "GUARDAR") {
+                    alert("✅ Descarga exitosa. Se recargará la página."); location.reload();
+                } else if (action === "GUARDAR") {
                     const data = {};
                     for(let i=0; i<localStorage.length; i++) {
                         const k = localStorage.key(i); if(k.startsWith('f_v_cloud_') || k.startsWith('conf_')) data[k] = localStorage.getItem(k);
@@ -315,24 +287,23 @@
                         headers: { 'Authorization': `token ${token}` },
                         body: JSON.stringify({ description: "Backup Finanzas 2026", public: false, files: { "finanzas.json": { content: JSON.stringify(data) } } })
                     });
-                    alert("✅ Guardado.");
+                    alert("✅ Guardado en Nube correctamente.");
                 }
-            } catch(e) { alert("❌ Error."); }
+            } catch(e) { alert("❌ Error de conexión o Token inválido."); }
         }
 
         function saveCurrentMonth() {
             const m = document.getElementById('global-month').value, res = calculateReal();
             const state = { m, pI1: document.getElementById('p-inc-q1').value, pI2: document.getElementById('p-inc-q2').value, inc1: document.getElementById('inc-q1').value, inc2: document.getElementById('inc-q2').value, v1: Array.from(document.querySelectorAll('.r-row-q1 .val-input')).map(i => i.value), v2: Array.from(document.querySelectorAll('.r-row-q2 .val-input')).map(i => i.value), summary: res };
             localStorage.setItem('f_v_cloud_' + m, JSON.stringify(state));
-            alert('¡' + m + ' guardado!');
+            alert('¡' + m + ' guardado localmente!');
         }
 
         function changeMonth() {
             const m = document.getElementById('global-month').value;
             const s = JSON.parse(localStorage.getItem('f_v_cloud_' + m));
             if(s) {
-                document.getElementById('p-inc-q1').value = s.pI1 || "4700.00";
-                document.getElementById('p-inc-q2').value = s.pI2 || "3460.00";
+                document.getElementById('p-inc-q1').value = s.pI1 || "4700.00"; document.getElementById('p-inc-q2').value = s.pI2 || "3460.00";
                 document.getElementById('inc-q1').value = s.inc1; document.getElementById('inc-q2').value = s.inc2;
                 renderRows();
                 document.querySelectorAll('.r-row-q1 .val-input').forEach((inp, i) => inp.value = s.v1[i] || "");
