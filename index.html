@@ -13,7 +13,7 @@
         .tab-content.active { display: block; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .active-tab-btn { color: #007AFF !important; }
-        .q-balance-bar { padding: 12px 18px; border-radius: 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
 <body>
@@ -39,52 +39,96 @@
 
     <main class="p-5 max-w-lg mx-auto">
         <div id="esperado" class="tab-content active space-y-6">
-            <div id="resumen-plan-q1"></div>
-            <div id="list-plan-q1" class="space-y-2"></div>
-            <div id="resumen-plan-q2" class="pt-4"></div>
-            <div id="list-plan-q2" class="space-y-2"></div>
+            
+            <div class="space-y-3">
+                <div class="ios-card p-4 bg-indigo-50 border border-indigo-100 flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] font-black text-indigo-400 uppercase">Ingreso Ideal Q1</p>
+                        <div class="flex items-center font-black text-indigo-600 text-xl">
+                            <span>Q</span>
+                            <input type="number" inputmode="decimal" id="p-inc-q1" value="4700.00" oninput="calculateReal()" class="bg-transparent outline-none w-24">
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">Sobrante Q1</p>
+                        <p id="p-save-q1" class="text-sm font-black text-slate-700">Q0.00</p>
+                    </div>
+                </div>
+                <div id="list-plan-q1" class="space-y-2"></div>
+                <button onclick="addExtraPlan('list-plan-q1')" class="w-full py-2 bg-white rounded-xl border-2 border-dashed border-indigo-200 text-indigo-400 font-bold text-[10px] uppercase">+ Gasto Plan Q1</button>
+            </div>
+
+            <hr class="border-slate-200">
+
+            <div class="space-y-3">
+                <div class="ios-card p-4 bg-emerald-50 border border-emerald-100 flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] font-black text-emerald-500 uppercase">Ingreso Ideal Q2</p>
+                        <div class="flex items-center font-black text-emerald-600 text-xl">
+                            <span>Q</span>
+                            <input type="number" inputmode="decimal" id="p-inc-q2" value="3460.00" oninput="calculateReal()" class="bg-transparent outline-none w-24">
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">Sobrante Q2</p>
+                        <p id="p-save-q2" class="text-sm font-black text-slate-700">Q0.00</p>
+                    </div>
+                </div>
+                <div id="list-plan-q2" class="space-y-2"></div>
+                <button onclick="addExtraPlan('list-plan-q2')" class="w-full py-2 bg-white rounded-xl border-2 border-dashed border-emerald-200 text-emerald-400 font-bold text-[10px] uppercase">+ Gasto Plan Q2</button>
+            </div>
+
+            <div class="ios-card p-5 bg-slate-800 text-white space-y-3 shadow-xl">
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Resumen Plan Mensual</p>
+                <div class="flex justify-between items-end">
+                    <div><p class="text-[9px] font-bold text-slate-400 uppercase">Total Ingresos</p><p id="p-inc-total" class="text-lg font-black">Q0.00</p></div>
+                    <div><p class="text-[9px] font-bold text-slate-400 uppercase">Total Gastos</p><p id="p-exp-total" class="text-lg font-black text-red-400">Q0.00</p></div>
+                    <div class="text-right"><p class="text-[9px] font-bold text-slate-400 uppercase">Ahorro Plan</p><p id="p-save-total" class="text-2xl font-black text-emerald-400">Q0.00</p></div>
+                </div>
+            </div>
         </div>
 
         <div id="real" class="tab-content space-y-6">
             <div class="space-y-3">
-                <div class="q-balance-bar bg-indigo-600 text-white shadow-lg">
-                    <div><p class="text-[9px] font-bold uppercase opacity-70">Disponible Q1</p><p id="disp-q1" class="text-xl font-black">Q0.00</p></div>
-                    <i class="fas fa-wallet opacity-40"></i>
+                <div class="ios-card p-4 bg-indigo-600 text-white shadow-lg flex justify-between items-center">
+                    <div><p class="text-[9px] font-bold uppercase opacity-70">Sobrante Q1 (En mano)</p><p id="wallet-q1" class="text-xl font-black">Q0.00</p></div>
+                    <div class="text-right"><p class="text-[9px] font-bold uppercase opacity-70">Restante Real Q1</p><p id="rest-q1" class="text-sm font-black text-indigo-200">Q0.00</p></div>
                 </div>
                 <div class="ios-card p-4">
                     <span class="text-[10px] font-bold text-slate-400 uppercase">Ingreso Real Q1</span>
-                    <input type="number" id="inc-q1" value="4700" oninput="calculateReal()" class="w-full text-lg font-bold text-indigo-600 outline-none bg-transparent">
+                    <input type="number" inputmode="decimal" id="inc-q1" value="4700.00" oninput="calculateReal()" class="w-full text-lg font-bold text-indigo-600 outline-none bg-transparent">
                 </div>
                 <div id="rows-q1" class="space-y-2"></div>
-                <div id="extra-q1"></div>
-                <button onclick="addExtra('extra-q1', 'r-row-extra')" class="w-full py-3 rounded-xl border-2 border-dashed border-slate-200 text-slate-400 font-bold text-[10px] uppercase">+ Extra Q1</button>
             </div>
-            <hr class="border-slate-200 my-6">
+
+            <hr class="border-slate-200">
+
             <div class="space-y-3">
-                <div class="q-balance-bar bg-emerald-600 text-white shadow-lg">
-                    <div><p class="text-[9px] font-bold uppercase opacity-70">Disponible Q2</p><p id="disp-q2" class="text-xl font-black">Q0.00</p></div>
-                    <i class="fas fa-piggy-bank opacity-40"></i>
+                <div class="ios-card p-4 bg-emerald-600 text-white shadow-lg flex justify-between items-center">
+                    <div><p class="text-[9px] font-bold uppercase opacity-70">Sobrante Q2 (En mano)</p><p id="wallet-q2" class="text-xl font-black">Q0.00</p></div>
+                    <div class="text-right"><p class="text-[9px] font-bold uppercase opacity-70">Restante Real Q2</p><p id="rest-q2" class="text-sm font-black text-emerald-200">Q0.00</p></div>
                 </div>
                 <div class="ios-card p-4">
                     <span class="text-[10px] font-bold text-slate-400 uppercase">Ingreso Real Q2</span>
-                    <input type="number" id="inc-q2" value="3460" oninput="calculateReal()" class="w-full text-lg font-bold text-emerald-600 outline-none bg-transparent">
+                    <input type="number" inputmode="decimal" id="inc-q2" value="3460.00" oninput="calculateReal()" class="w-full text-lg font-bold text-emerald-600 outline-none bg-transparent">
                 </div>
                 <div id="rows-q2" class="space-y-2"></div>
-                <div id="extra-q2"></div>
-                <button onclick="addExtra('extra-q2', 'r-row-extra-q2')" class="w-full py-3 rounded-xl border-2 border-dashed border-slate-200 text-slate-400 font-bold text-[10px] uppercase">+ Extra Q2</button>
             </div>
         </div>
 
         <div id="ahorro" class="tab-content space-y-4">
-            <h2 class="text-xl font-black text-slate-800 ml-1">Estado Mensual</h2>
-            <div class="ios-card p-5 border-l-8 border-indigo-500">
-                <p class="text-[10px] font-bold text-slate-400 uppercase">Ahorro Ideal (Plan)</p>
-                <p class="text-2xl font-black text-slate-800">Q1,984.64</p>
+            <h2 class="text-xl font-black text-slate-800 ml-1">Meta Mensual</h2>
+            <div class="ios-card p-5 border-l-8 border-slate-300">
+                <p class="text-[10px] font-bold text-slate-400 uppercase">Ahorro Planeado</p>
+                <p id="save-plan-total-tab" class="text-2xl font-black text-slate-800">Q0.00</p>
             </div>
             <div class="ios-card p-5 border-l-8 border-emerald-500 shadow-xl">
                 <p class="text-[10px] font-bold text-slate-400 uppercase">Ahorro Real Obtenido</p>
-                <p id="save-final-tab" class="text-3xl font-black text-slate-800">Q0.00</p>
-                <div class="w-full bg-slate-100 h-2 rounded-full mt-3"><div id="bar" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width:0%"></div></div>
+                <p id="save-final-tab" class="text-4xl font-black text-emerald-500 py-2">Q0.00</p>
+                <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                    <div id="bar" class="h-full bg-emerald-500 transition-all duration-700" style="width:0%"></div>
+                </div>
+                <p id="status-txt" class="text-[10px] font-black text-slate-400 mt-3 uppercase text-center">Incompleto</p>
             </div>
         </div>
 
@@ -95,140 +139,167 @@
     </main>
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-200 flex justify-around p-4 pb-8 z-50">
-        <button onclick="openTab(event, 'esperado')" class="tab-btn active-tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300">
-            <i class="fas fa-list-check text-xl"></i><span class="text-[9px] font-bold uppercase">Plan</span>
-        </button>
-        <button onclick="openTab(event, 'real')" class="tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300">
-            <i class="fas fa-wallet text-xl"></i><span class="text-[9px] font-bold uppercase">Real</span>
-        </button>
-        <button onclick="openTab(event, 'ahorro')" class="tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300">
-            <i class="fas fa-chart-line text-xl"></i><span class="text-[9px] font-bold uppercase">Metas</span>
-        </button>
-        <button onclick="openTab(event, 'historial')" class="tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300">
-            <i class="fas fa-calendar text-xl"></i><span class="text-[9px] font-bold uppercase">Anual</span>
-        </button>
+        <button onclick="openTab(event, 'esperado')" class="tab-btn active-tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300"><i class="fas fa-edit text-xl"></i><span class="text-[9px] font-bold uppercase">Plan</span></button>
+        <button onclick="openTab(event, 'real')" class="tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300"><i class="fas fa-wallet text-xl"></i><span class="text-[9px] font-bold uppercase">Real</span></button>
+        <button onclick="openTab(event, 'ahorro')" class="tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300"><i class="fas fa-piggy-bank text-xl"></i><span class="text-[9px] font-bold uppercase">Metas</span></button>
+        <button onclick="openTab(event, 'historial')" class="tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300"><i class="fas fa-calendar-alt text-xl"></i><span class="text-[9px] font-bold uppercase">Anual</span></button>
     </nav>
 
     <script>
-        const icons = {
-            "Tarjeta Promerica": "fa-credit-card", "Préstamo 1/2": "fa-hand-holding-dollar", "Luz": "fa-bolt", "Agua": "fa-droplet",
-            "Internet": "fa-wifi", "Spotify": "fa-music", "Gatos 1/2": "fa-cat", "Super": "fa-cart-shopping",
-            "Gasolina": "fa-gas-pump", "Uber": "fa-car", "Renta Vivienda": "fa-house", "Gimnasio": "fa-dumbbell",
-            "Tarjeta BAC": "fa-credit-card", "Préstamo 2/2": "fa-hand-holding-dollar", "Gatos 2/2": "fa-cat"
-        };
+        const icons = { "Tarjeta Promerica": "fa-credit-card", "Préstamo 1/2": "fa-hand-holding-dollar", "Luz": "fa-bolt", "Agua": "fa-droplet", "Internet": "fa-wifi", "Spotify": "fa-music", "Gatos 1/2": "fa-cat", "Super": "fa-cart-shopping", "Gasolina": "fa-gas-pump", "Uber": "fa-car", "Renta Vivienda": "fa-house", "Gimnasio": "fa-dumbbell", "Tarjeta BAC": "fa-credit-card", "Préstamo 2/2": "fa-hand-holding-dollar", "Gatos 2/2": "fa-cat" };
 
-        const dataQ1 = [{n:"Tarjeta Promerica",v:1024.86},{n:"Préstamo 1/2",v:361.90},{n:"Luz",v:150.00},{n:"Agua",v:120.00},{n:"Internet",v:225.00},{n:"Spotify",v:80.00},{n:"Gatos 1/2",v:300.00},{n:"Super",v:500.00},{n:"Gasolina",v:300.00},{n:"Uber",v:200.00}];
-        const dataQ2 = [{n:"Renta Vivienda",v:500.00},{n:"Gimnasio",v:400.00},{n:"Tarjeta BAC",v:351.70},{n:"Préstamo 2/2",v:361.90},{n:"Gatos 2/2",v:300.00},{n:"Super",v:500.00},{n:"Gasolina",v:300.00},{n:"Uber",v:200.00}];
+        let itemsQ1 = JSON.parse(localStorage.getItem('conf_q1')) || [{n:"Tarjeta Promerica",v:1024.86},{n:"Préstamo 1/2",v:361.90},{n:"Luz",v:150.00},{n:"Agua",v:120.00},{n:"Internet",v:225.00},{n:"Spotify",v:80.00},{n:"Gatos 1/2",v:300.00},{n:"Super",v:500.00},{n:"Gasolina",v:300.00},{n:"Uber",v:200.00}];
+        let itemsQ2 = JSON.parse(localStorage.getItem('conf_q2')) || [{n:"Renta Vivienda",v:500.00},{n:"Gimnasio",v:400.00},{n:"Tarjeta BAC",v:351.70},{n:"Préstamo 2/2",v:361.90},{n:"Gatos 2/2",v:300.00},{n:"Super",v:500.00},{n:"Gasolina",v:300.00},{n:"Uber",v:200.00}];
+
+        function f(num) { return 'Q' + (num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
         function renderRows() {
-            const sumQ1 = dataQ1.reduce((a, b) => a + b.v, 0);
-            const sumQ2 = dataQ2.reduce((a, b) => a + b.v, 0);
-            const cardPlan = (title, inc, exp, color) => `<div class="ios-card p-4 mb-2 border-l-4 ${color}"><h3 class="text-[10px] font-black uppercase mb-2 text-slate-400">${title}</h3><div class="flex justify-between text-[10px] font-bold"><span>Ingreso: Q${inc}</span><span>Gastos: Q${exp.toFixed(2)}</span><span class="text-blue-600">Sobra: Q${(inc-exp).toFixed(2)}</span></div></div>`;
-            document.getElementById('resumen-plan-q1').innerHTML = cardPlan("Ideal Quincena 1", 4700, sumQ1, "border-indigo-500");
-            document.getElementById('resumen-plan-q2').innerHTML = cardPlan("Ideal Quincena 2", 3460, sumQ2, "border-emerald-500");
-            const fmt = (v) => `<div class="ios-card p-3 flex justify-between items-center"><div class="flex items-center gap-3"><i class="fas ${icons[v.n] || 'fa-tag'} text-slate-300 text-xs"></i><span class="text-xs font-medium text-slate-700">${v.n}</span></div><span class="text-xs font-black text-slate-400">Q${v.v.toFixed(2)}</span></div>`;
-            document.getElementById('list-plan-q1').innerHTML = dataQ1.map(fmt).join('');
-            document.getElementById('list-plan-q2').innerHTML = dataQ2.map(fmt).join('');
-            document.getElementById('rows-q1').innerHTML = dataQ1.map(i => createInputRow(i, 'r-row', 'val', 'dif')).join('');
-            document.getElementById('rows-q2').innerHTML = dataQ2.map(i => createInputRow(i, 'r-row-q2', 'val-q2', 'dif-q2')).join('');
-        }
-
-        function createInputRow(item, rowClass, valClass, difClass) {
-            return `<div class="${rowClass} ios-card p-4 flex items-center justify-between mb-2" data-exp="${item.v}"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400"><i class="fas ${icons[item.n] || 'fa-tag'} text-sm"></i></div><div><p class="text-sm font-bold text-slate-800">${item.n}</p><p class="text-[9px] text-slate-400 uppercase">Plan: Q${item.v.toFixed(2)}</p></div></div><div class="text-right"><input type="number" class="${valClass} w-24 text-right font-black text-indigo-600 border-b border-slate-100 outline-none bg-transparent" oninput="calculateReal()" placeholder="0.00"><p class="${difClass} text-[9px] font-black text-slate-300 mt-1">Q0.00</p></div></div>`;
-        }
-
-        function calculateReal() {
-            const inc1 = parseFloat(document.getElementById('inc-q1').value) || 0, inc2 = parseFloat(document.getElementById('inc-q2').value) || 0;
-            const q1 = calcGroup('r-row', 'val', 'dif'), q1E = calcGroup('r-row-extra', 'extra-val', '');
-            const q2 = calcGroup('r-row-q2', 'val-q2', 'dif-q2'), q2E = calcGroup('r-row-extra-q2', 'extra-val', '');
-            const disp1 = inc1 - (q1.pagado + q1E.pagado), disp2 = inc2 - (q2.pagado + q2E.pagado);
-            document.getElementById('disp-q1').innerText = 'Q' + disp1.toLocaleString('en-US',{minimumFractionDigits:2});
-            document.getElementById('disp-q2').innerText = 'Q' + disp2.toLocaleString('en-US',{minimumFractionDigits:2});
-            const totalSobrante = disp1 + disp2;
-            document.getElementById('save-final-tab').innerText = 'Q' + totalSobrante.toLocaleString('en-US',{minimumFractionDigits:2});
-            document.getElementById('bar').style.width = Math.max(0, Math.min((totalSobrante / 1984.64) * 100, 100)) + '%';
-            return { inc: inc1+inc2, exp: (q1.pagado+q1E.pagado+q2.pagado+q2E.pagado), save: totalSobrante };
-        }
-
-        function calcGroup(rowClass, valClass, diffClass) {
-            let pagado = 0;
-            document.querySelectorAll('.' + rowClass).forEach(row => {
-                const plan = parseFloat(row.dataset.exp) || 0, input = row.querySelector('.' + valClass), val = parseFloat(input.value) || 0, cell = row.querySelector('.' + diffClass);
-                if (input.value !== "") { pagado += val; if(cell) { const d = plan - val; cell.innerText = (d >= 0 ? '+' : '') + 'Q' + d.toFixed(2); cell.className = `${diffClass} text-[9px] font-black ` + (d >= 0 ? 'text-emerald-500' : 'text-red-500'); }
-                } else if(cell) { cell.innerText = "Q0.00"; cell.className = `${diffClass} text-[9px] font-black text-slate-300`; }
-            });
-            return { pagado };
-        }
-
-        function addExtra(containerId, rowClass, name = "", val = "") {
-            const label = name || prompt("Gasto extra:");
-            if(!label) return;
-            const div = document.createElement('div');
-            div.className = `${rowClass} ios-card bg-amber-50/50 p-4 flex items-center justify-between mt-2`;
-            div.innerHTML = `<div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600"><i class="fas fa-plus text-xs"></i></div><p class="text-sm font-bold text-amber-800">${label}</p></div><input type="number" class="extra-val w-24 text-right font-black text-amber-600 border-b border-amber-200 outline-none bg-transparent" oninput="calculateReal()" value="${val}">`;
-            document.getElementById(containerId).appendChild(div);
+            const renderPlan = (items, container) => {
+                document.getElementById(container).innerHTML = items.map((item, i) => `
+                    <div class="ios-card p-3 flex justify-between items-center bg-white/50">
+                        <span class="text-xs font-bold text-slate-700">${item.n}</span>
+                        <input type="number" inputmode="decimal" value="${item.v.toFixed(2)}" oninput="updatePlanValue('${container}', ${i}, this.value)" class="w-20 text-right font-black text-slate-800 text-xs bg-slate-100 rounded-lg p-1 outline-none">
+                    </div>`).join('');
+            };
+            renderPlan(itemsQ1, 'list-plan-q1');
+            renderPlan(itemsQ2, 'list-plan-q2');
+            document.getElementById('rows-q1').innerHTML = itemsQ1.map(i => createInputRow(i, 'r-row', 'val', 'dif')).join('');
+            document.getElementById('rows-q2').innerHTML = itemsQ2.map(i => createInputRow(i, 'r-row-q2', 'val-q2', 'dif-q2')).join('');
             calculateReal();
         }
 
-        function openTab(evt, tabName) {
-            document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
-            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active-tab-btn"));
-            document.getElementById(tabName).classList.add("active");
-            evt.currentTarget.classList.add("active-tab-btn");
-            if(tabName === 'historial') updateHistory();
+        function createInputRow(item, rowClass, valClass, difClass) {
+            return `<div class="${rowClass} ios-card p-4 flex items-center justify-between mb-2" data-exp="${item.v}">
+                <div class="flex items-center gap-3"><i class="fas ${icons[item.n] || 'fa-tag'} text-slate-300"></i><div><p class="text-sm font-bold text-slate-800">${item.n}</p><p class="text-[9px] text-slate-400 uppercase">Plan: Q${item.v.toFixed(2)}</p></div></div>
+                <div class="text-right"><input type="number" inputmode="decimal" class="${valClass} w-24 text-right font-black text-indigo-600 border-b border-slate-100 outline-none bg-transparent" oninput="calculateReal()" placeholder="0.00"><p class="${difClass} text-[9px] font-black text-slate-300 mt-1">Q0.00</p></div></div>`;
         }
 
-        function saveCurrentMonth() {
-            const m = document.getElementById('global-month').value, res = calculateReal();
-            const state = { m, inc1: document.getElementById('inc-q1').value, inc2: document.getElementById('inc-q2').value, v1: Array.from(document.querySelectorAll('#rows-q1 .val')).map(i => i.value), v2: Array.from(document.querySelectorAll('#rows-q2 .val-q2')).map(i => i.value), ext1: Array.from(document.querySelectorAll('.r-row-extra')).map(row => ({ n: row.querySelector('p').innerText, v: row.querySelector('.extra-val').value })), ext2: Array.from(document.querySelectorAll('.r-row-extra-q2')).map(row => ({ n: row.querySelector('p').innerText, v: row.querySelector('.extra-val').value })), summary: res };
-            localStorage.setItem('f_v_cloud_' + m, JSON.stringify(state));
-            alert('¡' + m + ' guardado localmente!');
+        function updatePlanValue(container, i, val) {
+            const num = parseFloat(val) || 0;
+            if(container === 'list-plan-q1') itemsQ1[i].v = num;
+            else itemsQ2[i].v = num;
+            localStorage.setItem('conf_q1', JSON.stringify(itemsQ1));
+            localStorage.setItem('conf_q2', JSON.stringify(itemsQ2));
+            calculateReal();
+        }
+
+        function addExtraPlan(container) {
+            const n = prompt("Nombre del gasto:"); if(!n) return;
+            const v = parseFloat(prompt("Monto (Q):")) || 0;
+            if(container === 'list-plan-q1') itemsQ1.push({n, v}); else itemsQ2.push({n, v});
+            localStorage.setItem('conf_q1', JSON.stringify(itemsQ1)); localStorage.setItem('conf_q2', JSON.stringify(itemsQ2));
+            renderRows();
+        }
+
+        function calculateReal() {
+            // Plan calculations
+            const pI1 = parseFloat(document.getElementById('p-inc-q1').value) || 0;
+            const pI2 = parseFloat(document.getElementById('p-inc-q2').value) || 0;
+            const sP1 = itemsQ1.reduce((a, b) => a + b.v, 0);
+            const sP2 = itemsQ2.reduce((a, b) => a + b.v, 0);
+
+            document.getElementById('p-save-q1').innerText = f(pI1 - sP1);
+            document.getElementById('p-save-q2').innerText = f(pI2 - sP2);
+            document.getElementById('p-inc-total').innerText = f(pI1 + pI2);
+            document.getElementById('p-exp-total').innerText = f(sP1 + sP2);
+            const tPS = (pI1 - sP1) + (pI2 - sP2);
+            document.getElementById('p-save-total').innerText = f(tPS);
+            document.getElementById('save-plan-total-tab').innerText = f(tPS);
+
+            // Real calculations
+            const rI1 = parseFloat(document.getElementById('inc-q1').value) || 0;
+            const rI2 = parseFloat(document.getElementById('inc-q2').value) || 0;
+
+            let pg1 = 0, pg2 = 0, fl1 = 0, fl2 = 0, comp = true;
+            const proc = (rowC, valC, difC, isQ1) => {
+                document.querySelectorAll('.'+rowC).forEach(row => {
+                    const pl = parseFloat(row.dataset.exp), inp = row.querySelector('.'+valC), cl = row.querySelector('.'+difC);
+                    if(inp.value !== "") {
+                        const v = parseFloat(inp.value); 
+                        if(isQ1) pg1 += v; else pg2 += v;
+                        const d = pl - v; cl.innerText = (d>=0?'+':'-')+'Q'+Math.abs(d).toFixed(2);
+                        // SEMÁFORO: d>=0 (Gasté menos o igual al plan) = Verde. Negativo = Rojo.
+                        cl.className = `${difC} text-[9px] font-black ` + (d>=0?'text-emerald-500':'text-red-500');
+                    } else { comp = false; if(isQ1) fl1 += pl; else fl2 += pl; 
+                        cl.innerText = "Q0.00"; cl.className = "text-slate-300 text-[9px] font-black"; }
+                });
+            };
+            proc('r-row', 'val', 'dif', true); proc('r-row-q2', 'val-q2', 'dif-q2', false);
+
+            const w1 = rI1 - pg1; const w2 = rI2 - pg2;
+            document.getElementById('wallet-q1').innerText = f(w1);
+            document.getElementById('wallet-q2').innerText = f(w2);
+            document.getElementById('rest-q1').innerText = f(w1 - fl1);
+            document.getElementById('rest-q2').innerText = f(w2 - fl2);
+
+            if(comp) {
+                const final = w1 + w2; document.getElementById('save-final-tab').innerText = f(final);
+                document.getElementById('bar').style.width = Math.max(0, Math.min((final/tPS)*100, 100)) + '%';
+                document.getElementById('status-txt').innerText = "Mes Completado";
+            } else {
+                document.getElementById('save-final-tab').innerText = "PENDIENTE";
+                document.getElementById('bar').style.width = "0%";
+                document.getElementById('status-txt').innerText = "Faltan datos";
+            }
+            return { inc: rI1+rI2, exp: pg1+pg2, save: (comp ? w1+w2 : 0) };
+        }
+
+        function openTab(evt, name) {
+            document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active-tab-btn"));
+            document.getElementById(name).classList.add("active");
+            evt.currentTarget.classList.add("active-tab-btn");
+            if(name === 'historial') updateHistory();
         }
 
         async function syncCloud() {
             let token = localStorage.getItem('gh_token_f2026');
-            if(!token) { token = prompt("Pega tu GitHub Token:"); if(token) localStorage.setItem('gh_token_f2026', token); else return; }
+            if(!token) { token = prompt("Token:"); if(token) localStorage.setItem('gh_token_f2026', token); else return; }
             try {
-                const gistsRes = await fetch('https://api.github.com/gists', { headers: { 'Authorization': `token ${token}` } });
-                const gists = await gistsRes.json();
+                const res = await fetch('https://api.github.com/gists', { headers: { 'Authorization': `token ${token}` } });
+                const gists = await res.json();
                 const myGist = gists.find(g => g.description === "Backup Finanzas 2026");
-                if (myGist) {
-                    if (confirm("¿DESCARGAR datos de la nube al celular? (Aceptar para descargar, Cancelar para subir los de este móvil)")) {
-                        const fileRes = await fetch(myGist.files["finanzas.json"].raw_url);
-                        const cloudData = await fileRes.json();
-                        Object.keys(cloudData).forEach(key => localStorage.setItem(key, cloudData[key]));
-                        alert("✅ Sincronización completa."); location.reload(); return;
+                const accion = prompt("Escribe 'DESCARGAR' o 'GUARDAR':", "GUARDAR");
+                if (accion && accion.toUpperCase() === "DESCARGAR" && myGist) {
+                    const f = await fetch(myGist.files["finanzas.json"].raw_url);
+                    const d = await f.json(); Object.keys(d).forEach(k => localStorage.setItem(k, d[k]));
+                    alert("✅ Cargado."); location.reload(); return;
+                } else if (accion && accion.toUpperCase() === "GUARDAR") {
+                    const data = {};
+                    for(let i=0; i<localStorage.length; i++) {
+                        const k = localStorage.key(i); if(k.startsWith('f_v_cloud_') || k.startsWith('conf_')) data[k] = localStorage.getItem(k);
                     }
+                    await fetch(myGist ? `https://api.github.com/gists/${myGist.id}` : 'https://api.github.com/gists', {
+                        method: myGist ? 'PATCH' : 'POST',
+                        headers: { 'Authorization': `token ${token}` },
+                        body: JSON.stringify({ description: "Backup Finanzas 2026", public: false, files: { "finanzas.json": { content: JSON.stringify(data) } } })
+                    });
+                    alert("✅ Guardado.");
                 }
-                const data = {};
-                for(let i=0; i<localStorage.length; i++) {
-                    const key = localStorage.key(i); if(key.startsWith('f_v_cloud_')) data[key] = localStorage.getItem(key);
-                }
-                const method = myGist ? 'PATCH' : 'POST';
-                const url = myGist ? `https://api.github.com/gists/${myGist.id}` : 'https://api.github.com/gists';
-                await fetch(url, {
-                    method: method,
-                    headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ description: "Backup Finanzas 2026", public: false, files: { "finanzas.json": { content: JSON.stringify(data) } } })
-                });
-                alert("✅ Datos subidos a GitHub.");
             } catch(e) { alert("❌ Error."); }
+        }
+
+        function saveCurrentMonth() {
+            const m = document.getElementById('global-month').value, res = calculateReal();
+            const state = { m, pI1: document.getElementById('p-inc-q1').value, pI2: document.getElementById('p-inc-q2').value, inc1: document.getElementById('inc-q1').value, inc2: document.getElementById('inc-q2').value, v1: Array.from(document.querySelectorAll('#rows-q1 .val')).map(i => i.value), v2: Array.from(document.querySelectorAll('#rows-q2 .val-q2')).map(i => i.value), summary: res };
+            localStorage.setItem('f_v_cloud_' + m, JSON.stringify(state));
+            alert('¡' + m + ' guardado!');
         }
 
         function changeMonth() {
             const m = document.getElementById('global-month').value;
-            document.getElementById('extra-q1').innerHTML = ""; document.getElementById('extra-q2').innerHTML = "";
-            const saved = localStorage.getItem('f_v_cloud_' + m);
-            if(saved) {
-                const s = JSON.parse(saved);
+            const s = JSON.parse(localStorage.getItem('f_v_cloud_' + m));
+            if(s) {
+                document.getElementById('p-inc-q1').value = s.pI1 || "4700.00";
+                document.getElementById('p-inc-q2').value = s.pI2 || "3460.00";
                 document.getElementById('inc-q1').value = s.inc1; document.getElementById('inc-q2').value = s.inc2;
-                document.querySelectorAll('#rows-q1 .val').forEach((input, i) => input.value = s.v1[i] || "");
-                document.querySelectorAll('#rows-q2 .val-q2').forEach((input, i) => input.value = s.v2[i] || "");
-                if(s.ext1) s.ext1.forEach(e => addExtra('extra-q1', 'r-row-extra', e.n, e.v));
-                if(s.ext2) s.ext2.forEach(e => addExtra('extra-q2', 'r-row-extra-q2', e.n, e.v));
+                renderRows();
+                document.querySelectorAll('#rows-q1 .val').forEach((inp, i) => inp.value = s.v1[i] || "");
+                document.querySelectorAll('#rows-q2 .val-q2').forEach((inp, i) => inp.value = s.v2[i] || "");
             } else {
-                document.getElementById('inc-q1').value = 4700; document.getElementById('inc-q2').value = 3460;
-                document.querySelectorAll('input[type="number"]').forEach(i => { if(!i.id.includes('inc')) i.value = ""; });
+                document.getElementById('p-inc-q1').value = "4700.00"; document.getElementById('p-inc-q2').value = "3460.00";
+                document.getElementById('inc-q1').value = "4700.00"; document.getElementById('inc-q2').value = "3460.00";
+                renderRows();
             }
             calculateReal();
         }
@@ -240,12 +311,11 @@
                 const data = localStorage.getItem('f_v_cloud_' + m);
                 if(data) {
                     const s = JSON.parse(data); tS += s.summary.save;
-                    container.innerHTML += `<div class="ios-card overflow-hidden"><div class="bg-slate-50 px-4 py-2 flex justify-between border-b"><span class="font-black text-[10px] uppercase">${s.m}</span><button onclick="deleteM('${m}')" class="text-slate-300"><i class="fas fa-trash-alt text-xs"></i></button></div><div class="p-4 grid grid-cols-3 text-center"><div><p class="text-[8px] text-slate-400 font-bold uppercase">Ingreso</p><p class="text-xs font-black">Q${s.summary.inc.toFixed(0)}</p></div><div><p class="text-[8px] text-slate-400 font-bold uppercase">Gasto</p><p class="text-xs font-black text-red-500">Q${s.summary.exp.toFixed(0)}</p></div><div><p class="text-[8px] text-slate-400 font-bold uppercase">Ahorro</p><p class="text-xs font-black text-emerald-600">Q${s.summary.save.toFixed(0)}</p></div></div></div>`;
+                    container.innerHTML += `<div class="ios-card overflow-hidden"><div class="bg-slate-50 px-4 py-2 flex justify-between border-b"><span class="font-black text-[10px] uppercase">${s.m}</span></div><div class="p-4 grid grid-cols-3 text-center"><div><p class="text-[8px] text-slate-400 font-bold uppercase">Ingreso</p><p class="text-xs font-black">${f(s.summary.inc)}</p></div><div><p class="text-[8px] text-slate-400 font-bold uppercase">Gasto</p><p class="text-xs font-black text-red-500">${f(s.summary.exp)}</p></div><div><p class="text-[8px] text-slate-400 font-bold uppercase">Ahorro</p><p class="text-xs font-black text-emerald-600">${f(s.summary.save)}</p></div></div></div>`;
                 }
             });
-            foot.innerHTML = tS !== 0 ? `<div class="bg-slate-900 rounded-[2rem] p-6 text-white text-center mt-4"><p class="text-[10px] text-slate-400 uppercase mb-1">Ahorro Acumulado 2026</p><p class="text-4xl font-black text-emerald-400">Q${tS.toLocaleString()}</p></div>` : "";
+            foot.innerHTML = tS !== 0 ? `<div class="bg-slate-900 rounded-[2rem] p-6 text-white text-center mt-4"><p class="text-[10px] text-slate-400 uppercase mb-1">Ahorrado 2026</p><p class="text-4xl font-black text-emerald-400">${f(tS)}</p></div>` : "";
         }
-        function deleteM(m) { if(confirm('¿Borrar ' + m + '?')) { localStorage.removeItem('f_v_cloud_'+m); updateHistory(); } }
         window.onload = () => { renderRows(); changeMonth(); };
     </script>
 </body>
