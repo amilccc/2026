@@ -14,6 +14,7 @@
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .active-tab-btn { color: #007AFF !important; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .text-overspent { color: #FF3B30 !important; } /* Rojo iOS para sobregiro */
     </style>
 </head>
 <body>
@@ -163,23 +164,36 @@
             };
             renderPlan(itemsQ1, 'list-plan-q1');
             renderPlan(itemsQ2, 'list-plan-q2');
-            document.getElementById('rows-q1').innerHTML = itemsQ1.map(i => createInputRow(i, 'r-row', 'val', 'dif')).join('');
-            document.getElementById('rows-q2').innerHTML = itemsQ2.map(i => createInputRow(i, 'r-row-q2', 'val-q2', 'dif-q2')).join('');
+            
+            // Render Real con IDs únicos para sincronización
+            document.getElementById('rows-q1').innerHTML = itemsQ1.map((i, idx) => createInputRow(i, idx, 'q1')).join('');
+            document.getElementById('rows-q2').innerHTML = itemsQ2.map((i, idx) => createInputRow(i, idx, 'q2')).join('');
             calculateReal();
         }
 
-        function createInputRow(item, rowClass, valClass, difClass) {
-            return `<div class="${rowClass} ios-card p-4 flex items-center justify-between mb-2" data-exp="${item.v}">
-                <div class="flex items-center gap-3"><i class="fas ${icons[item.n] || 'fa-tag'} text-slate-300"></i><div><p class="text-sm font-bold text-slate-800">${item.n}</p><p class="text-[9px] text-slate-400 uppercase">Plan: Q${item.v.toFixed(2)}</p></div></div>
-                <div class="text-right"><input type="number" inputmode="decimal" class="${valClass} w-24 text-right font-black text-indigo-600 border-b border-slate-100 outline-none bg-transparent" oninput="calculateReal()" placeholder="0.00"><p class="${difClass} text-[9px] font-black text-slate-300 mt-1">Q0.00</p></div></div>`;
+        function createInputRow(item, idx, prefix) {
+            // Se agrega ID único al div contenedor para encontrarlo rápido
+            return `<div id="real-row-${prefix}-${idx}" class="r-row-${prefix} ios-card p-4 flex items-center justify-between mb-2" data-exp="${item.v}">
+                <div class="flex items-center gap-3"><i class="fas ${icons[item.n] || 'fa-tag'} text-slate-300"></i><div><p class="text-sm font-bold text-slate-800">${item.n}</p><p class="plan-label text-[9px] text-slate-400 uppercase">Plan: Q${item.v.toFixed(2)}</p></div></div>
+                <div class="text-right"><input type="number" inputmode="decimal" class="val-input w-24 text-right font-black text-indigo-600 border-b border-slate-100 outline-none bg-transparent" oninput="calculateReal()" placeholder="0.00"><p class="dif-lbl text-[9px] font-black text-slate-300 mt-1">Q0.00</p></div></div>`;
         }
 
         function updatePlanValue(container, i, val) {
             const num = parseFloat(val) || 0;
+            // 1. Actualizar memoria
             if(container === 'list-plan-q1') itemsQ1[i].v = num;
             else itemsQ2[i].v = num;
             localStorage.setItem('conf_q1', JSON.stringify(itemsQ1));
             localStorage.setItem('conf_q2', JSON.stringify(itemsQ2));
+
+            // 2. Sincronizar INMEDIATAMENTE la pestaña Real (Dom)
+            const prefix = container === 'list-plan-q1' ? 'q1' : 'q2';
+            const realRow = document.getElementById(`real-row-${prefix}-${i}`);
+            if(realRow) {
+                realRow.dataset.exp = num; // Actualiza el límite oculto
+                realRow.querySelector('.plan-label').innerText = 'Plan: ' + f(num); // Actualiza texto visible
+            }
+
             calculateReal();
         }
 
@@ -192,7 +206,7 @@
         }
 
         function calculateReal() {
-            // Plan calculations
+            // Cálculos Plan
             const pI1 = parseFloat(document.getElementById('p-inc-q1').value) || 0;
             const pI2 = parseFloat(document.getElementById('p-inc-q2').value) || 0;
             const sP1 = itemsQ1.reduce((a, b) => a + b.v, 0);
@@ -206,25 +220,52 @@
             document.getElementById('p-save-total').innerText = f(tPS);
             document.getElementById('save-plan-total-tab').innerText = f(tPS);
 
-            // Real calculations
+            // Cálculos Real
             const rI1 = parseFloat(document.getElementById('inc-q1').value) || 0;
             const rI2 = parseFloat(document.getElementById('inc-q2').value) || 0;
 
             let pg1 = 0, pg2 = 0, fl1 = 0, fl2 = 0, comp = true;
-            const proc = (rowC, valC, difC, isQ1) => {
-                document.querySelectorAll('.'+rowC).forEach(row => {
-                    const pl = parseFloat(row.dataset.exp), inp = row.querySelector('.'+valC), cl = row.querySelector('.'+difC);
+            
+            const proc = (prefix, isQ1) => {
+                document.querySelectorAll(`.r-row-${prefix}`).forEach(row => {
+                    const pl = parseFloat(row.dataset.exp); // Lee el plan actualizado
+                    const inp = row.querySelector('.val-input');
+                    const cl = row.querySelector('.dif-lbl');
+                    
                     if(inp.value !== "") {
                         const v = parseFloat(inp.value); 
                         if(isQ1) pg1 += v; else pg2 += v;
-                        const d = pl - v; cl.innerText = (d>=0?'+':'-')+'Q'+Math.abs(d).toFixed(2);
-                        // SEMÁFORO: d>=0 (Gasté menos o igual al plan) = Verde. Negativo = Rojo.
-                        cl.className = `${difC} text-[9px] font-black ` + (d>=0?'text-emerald-500':'text-red-500');
-                    } else { comp = false; if(isQ1) fl1 += pl; else fl2 += pl; 
-                        cl.innerText = "Q0.00"; cl.className = "text-slate-300 text-[9px] font-black"; }
+                        
+                        const d = pl - v; // Diferencia: Plan - Real
+                        
+                        // SEMÁFORO ESTRICTO
+                        if(d < 0) {
+                            // Me pasé: Rojo
+                            cl.innerText = '-' + f(Math.abs(d));
+                            cl.className = "dif-lbl text-[9px] font-black text-red-500 mt-1";
+                            inp.classList.add('text-overspent'); // Pone el input en ROJO
+                            inp.classList.remove(isQ1 ? 'text-indigo-600' : 'text-emerald-600');
+                        } else {
+                            // Ahorré o igual: Verde/Azul
+                            cl.innerText = '+' + f(Math.abs(d));
+                            cl.className = "dif-lbl text-[9px] font-black text-emerald-500 mt-1";
+                            inp.classList.remove('text-overspent');
+                            inp.classList.add(isQ1 ? 'text-indigo-600' : 'text-emerald-600');
+                        }
+
+                    } else { 
+                        comp = false; 
+                        if(isQ1) fl1 += pl; else fl2 += pl; 
+                        cl.innerText = "Q0.00"; 
+                        cl.className = "dif-lbl text-slate-300 text-[9px] font-black mt-1";
+                        inp.classList.remove('text-overspent');
+                        inp.classList.add(isQ1 ? 'text-indigo-600' : 'text-emerald-600');
+                    }
                 });
             };
-            proc('r-row', 'val', 'dif', true); proc('r-row-q2', 'val-q2', 'dif-q2', false);
+            
+            proc('q1', true); 
+            proc('q2', false);
 
             const w1 = rI1 - pg1; const w2 = rI2 - pg2;
             document.getElementById('wallet-q1').innerText = f(w1);
@@ -281,7 +322,7 @@
 
         function saveCurrentMonth() {
             const m = document.getElementById('global-month').value, res = calculateReal();
-            const state = { m, pI1: document.getElementById('p-inc-q1').value, pI2: document.getElementById('p-inc-q2').value, inc1: document.getElementById('inc-q1').value, inc2: document.getElementById('inc-q2').value, v1: Array.from(document.querySelectorAll('#rows-q1 .val')).map(i => i.value), v2: Array.from(document.querySelectorAll('#rows-q2 .val-q2')).map(i => i.value), summary: res };
+            const state = { m, pI1: document.getElementById('p-inc-q1').value, pI2: document.getElementById('p-inc-q2').value, inc1: document.getElementById('inc-q1').value, inc2: document.getElementById('inc-q2').value, v1: Array.from(document.querySelectorAll('.r-row-q1 .val-input')).map(i => i.value), v2: Array.from(document.querySelectorAll('.r-row-q2 .val-input')).map(i => i.value), summary: res };
             localStorage.setItem('f_v_cloud_' + m, JSON.stringify(state));
             alert('¡' + m + ' guardado!');
         }
@@ -294,8 +335,8 @@
                 document.getElementById('p-inc-q2').value = s.pI2 || "3460.00";
                 document.getElementById('inc-q1').value = s.inc1; document.getElementById('inc-q2').value = s.inc2;
                 renderRows();
-                document.querySelectorAll('#rows-q1 .val').forEach((inp, i) => inp.value = s.v1[i] || "");
-                document.querySelectorAll('#rows-q2 .val-q2').forEach((inp, i) => inp.value = s.v2[i] || "");
+                document.querySelectorAll('.r-row-q1 .val-input').forEach((inp, i) => inp.value = s.v1[i] || "");
+                document.querySelectorAll('.r-row-q2 .val-input').forEach((inp, i) => inp.value = s.v2[i] || "");
             } else {
                 document.getElementById('p-inc-q1').value = "4700.00"; document.getElementById('p-inc-q2').value = "3460.00";
                 document.getElementById('inc-q1').value = "4700.00"; document.getElementById('inc-q2').value = "3460.00";
