@@ -39,7 +39,7 @@
                     <option value="Noviembre">Noviembre</option><option value="Diciembre">Diciembre</option>
                 </select>
             </div>
-            <button onclick="saveCurrentMonth()" class="bg-[#007AFF] text-white px-6 py-2 rounded-full font-bold text-sm shadow-md active:scale-95 transition-all">Guardar</button>
+            <button onclick="saveCurrentMonth()" class="bg-[#007AFF] text-white px-6 py-2 rounded-full font-bold text-sm shadow-md active:scale-95 transition-all">Guardar Local</button>
         </div>
     </header>
 
@@ -50,7 +50,9 @@
             <p class="text-xs text-slate-400 font-bold mb-4">Elige una acción para tus datos</p>
             <button onclick="runCloudAction('GUARDAR')" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2"><i class="fas fa-upload"></i> Subir a Nube</button>
             <button onclick="runCloudAction('DESCARGAR')" class="w-full py-3 bg-white border-2 border-slate-100 text-slate-600 rounded-xl font-bold active:scale-95 transition-transform flex items-center justify-center gap-2"><i class="fas fa-download"></i> Descargar</button>
-            <button onclick="toggleCloudMenu(false)" class="text-red-500 font-bold text-xs mt-4 uppercase tracking-widest p-2">Cancelar</button>
+            <hr class="border-slate-100">
+            <button onclick="resetToken()" class="text-slate-400 font-bold text-[10px] uppercase tracking-tighter p-2">Limpiar Token GitHub</button>
+            <button onclick="toggleCloudMenu(false)" class="text-red-500 font-bold text-xs uppercase tracking-widest p-2 w-full">Cerrar</button>
         </div>
     </div>
 
@@ -76,23 +78,25 @@
                 </div>
             </div>
             <div class="ios-card p-5">
-                <p class="text-[10px] font-bold text-slate-400 uppercase mb-3">Top Gastos</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-3">Mayores Gastos Reales</p>
                 <div id="dash-top-expenses" class="space-y-3"></div>
             </div>
         </div>
 
         <div id="esperado" class="tab-content space-y-6">
             <div class="space-y-3">
-                <div class="ios-card p-4 bg-indigo-50 border border-indigo-100 flex justify-between items-center">
-                    <div><p class="text-[10px] font-black text-indigo-400 uppercase">Ingreso Ideal Q1</p><div class="flex items-center font-black text-indigo-600 text-xl"><span>Q</span><input type="number" inputmode="decimal" id="p-inc-q1" value="4700.00" oninput="calculateReal()" class="bg-transparent outline-none w-24"></div></div>
+                <div class="ios-card p-4 bg-indigo-50 border border-indigo-100">
+                    <p class="text-[10px] font-black text-indigo-400 uppercase">Ingreso Ideal Q1</p>
+                    <div class="flex items-center font-black text-indigo-600 text-xl"><span>Q</span><input type="number" inputmode="decimal" id="p-inc-q1" value="4700.00" oninput="calculateReal()" class="bg-transparent outline-none w-24"></div>
                 </div>
                 <div id="list-plan-q1" class="space-y-2"></div>
                 <button onclick="addExtraPlan('list-plan-q1')" class="w-full py-2 bg-white rounded-xl border-2 border-dashed border-indigo-200 text-indigo-400 font-bold text-[10px] uppercase">+ Gasto Plan Q1</button>
             </div>
             <hr class="border-slate-200">
             <div class="space-y-3">
-                <div class="ios-card p-4 bg-emerald-50 border border-emerald-100 flex justify-between items-center">
-                    <div><p class="text-[10px] font-black text-emerald-500 uppercase">Ingreso Ideal Q2</p><div class="flex items-center font-black text-emerald-600 text-xl"><span>Q</span><input type="number" inputmode="decimal" id="p-inc-q2" value="3460.00" oninput="calculateReal()" class="bg-transparent outline-none w-24"></div></div>
+                <div class="ios-card p-4 bg-emerald-50 border border-emerald-100">
+                    <p class="text-[10px] font-black text-emerald-500 uppercase">Ingreso Ideal Q2</p>
+                    <div class="flex items-center font-black text-emerald-600 text-xl"><span>Q</span><input type="number" inputmode="decimal" id="p-inc-q2" value="3460.00" oninput="calculateReal()" class="bg-transparent outline-none w-24"></div>
                 </div>
                 <div id="list-plan-q2" class="space-y-2"></div>
                 <button onclick="addExtraPlan('list-plan-q2')" class="w-full py-2 bg-white rounded-xl border-2 border-dashed border-emerald-200 text-emerald-400 font-bold text-[10px] uppercase">+ Gasto Plan Q2</button>
@@ -124,11 +128,11 @@
         </div>
 
         <div id="ahorro" class="tab-content space-y-4">
-            <h2 class="text-xl font-black text-slate-800 ml-1">Estado de Ahorro</h2>
+            <h2 class="text-xl font-black text-slate-800 ml-1">Efectivo Disponible</h2>
             <div class="ios-card p-5 border-l-8 border-emerald-500 shadow-xl">
-                <p class="text-[10px] font-bold text-slate-400 uppercase">Disponible Real Acumulado</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase">Balance Real Final</p>
                 <p id="save-final-tab" class="text-4xl font-black text-emerald-500 py-2">Q0.00</p>
-                <p id="status-txt" class="text-[10px] font-black text-slate-400 mt-3 uppercase">Calculando...</p>
+                <p id="status-txt" class="text-[10px] font-black text-slate-400 mt-3 uppercase">Actualizado</p>
             </div>
         </div>
 
@@ -152,13 +156,12 @@
         let itemsQ1 = JSON.parse(localStorage.getItem('conf_q1')) || [{n:"Tarjeta Promerica",v:1024.86},{n:"Préstamo 1/2",v:361.90},{n:"Luz",v:150.00},{n:"Agua",v:120.00},{n:"Internet",v:225.00},{n:"Spotify",v:80.00},{n:"Gatos 1/2",v:300.00},{n:"Super",v:500.00},{n:"Gasolina",v:300.00},{n:"Uber",v:200.00}];
         let itemsQ2 = JSON.parse(localStorage.getItem('conf_q2')) || [{n:"Renta Vivienda",v:500.00},{n:"Gimnasio",v:400.00},{n:"Tarjeta BAC",v:351.70},{n:"Préstamo 2/2",v:361.90},{n:"Gatos 2/2",v:300.00},{n:"Super",v:500.00},{n:"Gasolina",v:300.00},{n:"Uber",v:200.00}];
         
-        let realValues = {}; // Valores numéricos ingresados en Real
-        let hiddenRealItems = {}; // IDs de items del plan ocultos en este mes
+        let realValues = {};
+        let hiddenRealItems = {};
 
         function f(num) { return 'Q' + (num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
         function renderRows() {
-            // Render PLAN
             const renderPlan = (items, container) => {
                 document.getElementById(container).innerHTML = items.map((item, i) => `
                     <div class="ios-card p-3 flex justify-between items-center bg-white/50">
@@ -213,9 +216,7 @@
         }
 
         function deleteRealRow(key, isExtra, idx, prefix) {
-            if(!confirm("¿Eliminar este gasto de la lista Real? (No afectará al Plan)")) return;
             const currentMonth = document.getElementById('global-month').value;
-            
             if (isExtra) {
                 let extras = JSON.parse(localStorage.getItem(`extras_${currentMonth}`)) || { q1: [], q2: [] };
                 extras[prefix].splice(idx, 1);
@@ -224,7 +225,7 @@
                 if(!hiddenRealItems[currentMonth]) hiddenRealItems[currentMonth] = [];
                 hiddenRealItems[currentMonth].push(key);
             }
-            delete realValues[key]; // Borrar el valor ingresado
+            delete realValues[key];
             renderRealRows();
         }
 
@@ -263,7 +264,7 @@
                 } else {
                     comp = false;
                     if (isQ1) pp1 += planVal; else pp2 += planVal;
-                    diffL.innerText = "Pendiente"; diffL.className = "dif-lbl text-slate-300 text-[9px] font-bold mt-1";
+                    diffL.innerText = "Por pagar"; diffL.className = "dif-lbl text-slate-300 text-[9px] font-bold mt-1";
                 }
             });
 
@@ -277,27 +278,18 @@
 
             const final = (w1 - pp1) + (w2 - pp2);
             document.getElementById('save-final-tab').innerText = f(final);
-            document.getElementById('status-txt').innerText = comp ? "Todo pagado" : "Faltan pagos pendientes";
-
-            // Dash
-            const totalIn = rI1 + rI2; const totalOut = pg1 + pg2;
-            document.getElementById('dash-total-budget').innerText = f(totalIn);
-            document.getElementById('dash-spent').innerText = f(totalOut);
-            document.getElementById('dash-avail').innerText = f(totalIn - totalOut);
-            const pct = totalIn > 0 ? Math.min((totalOut / totalIn) * 100, 100) : 0;
+            
+            const tIn = rI1 + rI2; const tOut = pg1 + pg2;
+            document.getElementById('dash-total-budget').innerText = f(tIn);
+            document.getElementById('dash-spent').innerText = f(tOut);
+            document.getElementById('dash-avail').innerText = f(tIn - tOut);
+            const pct = tIn > 0 ? Math.min((tOut / tIn) * 100, 100) : 0;
             document.getElementById('dash-percent').innerText = Math.round(pct);
             document.getElementById('dash-circle').style.strokeDasharray = `${pct}, 100`;
             allEx.sort((a,b) => b.v - a.v);
             document.getElementById('dash-top-expenses').innerHTML = allEx.slice(0, 5).map(i => `<div class="flex justify-between text-xs border-b border-slate-100 pb-2"><span class="font-bold text-slate-600">${i.n}</span><span class="font-black text-slate-800">${f(i.v)}</span></div>`).join('');
 
-            return { inc: totalIn, exp: totalOut, save: final };
-        }
-
-        function deletePlanItem(container, index) {
-            if(!confirm("¿Eliminar del Plan Maestro?")) return;
-            if(container === 'list-plan-q1') itemsQ1.splice(index, 1); else itemsQ2.splice(index, 1);
-            localStorage.setItem('conf_q1', JSON.stringify(itemsQ1)); localStorage.setItem('conf_q2', JSON.stringify(itemsQ2));
-            renderRows();
+            return { inc: tIn, exp: tOut, save: final };
         }
 
         function updatePlanValue(container, i, val) {
@@ -305,6 +297,12 @@
             if(container === 'list-plan-q1') itemsQ1[i].v = num; else itemsQ2[i].v = num;
             localStorage.setItem('conf_q1', JSON.stringify(itemsQ1)); localStorage.setItem('conf_q2', JSON.stringify(itemsQ2));
             renderRealRows();
+        }
+
+        function deletePlanItem(container, index) {
+            if(container === 'list-plan-q1') itemsQ1.splice(index, 1); else itemsQ2.splice(index, 1);
+            localStorage.setItem('conf_q1', JSON.stringify(itemsQ1)); localStorage.setItem('conf_q2', JSON.stringify(itemsQ2));
+            renderRows();
         }
 
         function addExtraPlan(container) {
@@ -341,40 +339,73 @@
                 v_map: realValues, hidden: hiddenRealItems[m] || [], summary: calculateReal()
             };
             localStorage.setItem('f_v_cloud_' + m, JSON.stringify(state));
-            alert('Guardado!');
+            alert('¡Guardado Localmente!');
+        }
+
+        function toggleCloudMenu(show) { document.getElementById('cloud-modal').classList.toggle('hidden', !show); }
+
+        // --- FUNCIONES DE NUBE MEJORADAS ---
+        function resetToken() {
+            if(confirm("¿Seguro que quieres borrar el token? Deberás ingresarlo de nuevo.")) {
+                localStorage.removeItem('gh_token_f2026');
+                alert("Token borrado.");
+            }
+        }
+
+        async function runCloudAction(action) {
+            let token = localStorage.getItem('gh_token_f2026');
+            if(!token) { 
+                token = prompt("Ingresa tu Token de GitHub (Personal Access Token):"); 
+                if(token) localStorage.setItem('gh_token_f2026', token.trim()); 
+                else return; 
+            }
+            
+            toggleCloudMenu(false);
+            try {
+                // Verificar token y buscar gist
+                const res = await fetch('https://api.github.com/gists', { 
+                    headers: { 'Authorization': `Bearer ${token.trim()}` } 
+                });
+                if(!res.ok) throw new Error("Token Inválido");
+
+                const gists = await res.json();
+                const myGist = gists.find(g => g.description === "Backup Finanzas 2026");
+
+                if (action === "DESCARGAR") {
+                    if(!myGist) { alert("No hay respaldos en tu nube."); return; }
+                    const f = await fetch(myGist.files["finanzas.json"].raw_url);
+                    const d = await f.json(); 
+                    Object.keys(d).forEach(k => localStorage.setItem(k, d[k]));
+                    alert("✅ Descarga completa."); location.reload();
+                } else {
+                    const data = {}; 
+                    for(let i=0; i<localStorage.length; i++) { 
+                        const k = localStorage.key(i); 
+                        data[k] = localStorage.getItem(k); 
+                    }
+                    const body = JSON.stringify({ 
+                        description: "Backup Finanzas 2026", 
+                        public: false, 
+                        files: { "finanzas.json": { content: JSON.stringify(data) } } 
+                    });
+
+                    const saveRes = await fetch(myGist ? `https://api.github.com/gists/${myGist.id}` : 'https://api.github.com/gists', {
+                        method: myGist ? 'PATCH' : 'POST',
+                        headers: { 'Authorization': `Bearer ${token.trim()}` },
+                        body: body
+                    });
+                    if(saveRes.ok) alert("✅ Guardado en la Nube exitoso.");
+                    else alert("Error al guardar.");
+                }
+            } catch(e) { 
+                alert("❌ Error: Token inválido o problema de conexión. Intenta 'Limpiar Token' y pegar uno nuevo."); 
+            }
         }
 
         function openTab(evt, name) {
             document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
             document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active-tab-btn"));
             document.getElementById(name).classList.add("active"); evt.currentTarget.classList.add("active-tab-btn");
-            if(name === 'historial') updateHistory();
-        }
-
-        function toggleCloudMenu(show) { document.getElementById('cloud-modal').classList.toggle('hidden', !show); }
-
-        async function runCloudAction(action) {
-            toggleCloudMenu(false);
-            let token = localStorage.getItem('gh_token_f2026');
-            if(!token) { token = prompt("Token GitHub:"); if(token) localStorage.setItem('gh_token_f2026', token); else return; }
-            try {
-                const res = await fetch('https://api.github.com/gists', { headers: { 'Authorization': `token ${token}` } });
-                const gists = await res.json();
-                const myGist = gists.find(g => g.description === "Backup Finanzas 2026");
-                if (action === "DESCARGAR") {
-                    const f = await fetch(myGist.files["finanzas.json"].raw_url);
-                    const d = await f.json(); Object.keys(d).forEach(k => localStorage.setItem(k, d[k]));
-                    location.reload();
-                } else {
-                    const data = {}; for(let i=0; i<localStorage.length; i++) { const k = localStorage.key(i); data[k] = localStorage.getItem(k); }
-                    await fetch(myGist ? `https://api.github.com/gists/${myGist.id}` : 'https://api.github.com/gists', {
-                        method: myGist ? 'PATCH' : 'POST',
-                        headers: { 'Authorization': `token ${token}` },
-                        body: JSON.stringify({ description: "Backup Finanzas 2026", public: false, files: { "finanzas.json": { content: JSON.stringify(data) } } })
-                    });
-                    alert("Sincronizado!");
-                }
-            } catch(e) { alert("Error de Token"); }
         }
 
         function updateHistory() {
@@ -386,7 +417,7 @@
                     container.innerHTML += `<div class="ios-card p-4 flex justify-between"><b>${m}</b> <span class="text-emerald-600 font-bold">${f(s.summary.save)}</span></div>`;
                 }
             });
-            document.getElementById('history-foot').innerHTML = `<div class="bg-slate-900 rounded-3xl p-6 text-white text-center"><p class="text-xs opacity-50 uppercase">Total Ahorrado Anual</p><p class="text-3xl font-black text-emerald-400">${f(tS)}</p></div>`;
+            document.getElementById('history-foot').innerHTML = `<div class="bg-slate-900 rounded-3xl p-6 text-white text-center mt-4"><p class="text-xs opacity-50 uppercase">Acumulado Anual</p><p class="text-3xl font-black text-emerald-400">${f(tS)}</p></div>`;
         }
 
         window.onload = () => { renderRows(); changeMonth(); };
