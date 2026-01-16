@@ -356,30 +356,67 @@
                 localStorage.setItem('gh_token_f2026', t); 
             }
             toggleCloudMenu(false);
+            
             try {
-                const res = await fetch('https://api.github.com/gists?per_page=100', { headers: { 'Authorization': `token ${t}` } });
-                if(!res.ok) throw new Error();
+                // Paso 1: Buscar si ya existe el Gist
+                const res = await fetch('https://api.github.com/gists?per_page=100', { 
+                    headers: { 'Authorization': `token ${t}`, 'Accept': 'application/vnd.github.v3+json' } 
+                });
+                
+                if(!res.ok) {
+                    if(res.status === 401) throw new Error("Token Inválido");
+                    throw new Error("Error de conexión");
+                }
+
                 const gists = await res.json();
                 const myGist = gists.find(g => g.description === "Backup Finanzas 2026");
+
                 if (action === "DESCARGAR") {
-                    if(!myGist) return alert("No hay respaldo");
-                    const f = await fetch(myGist.files["finanzas.json"].raw_url);
+                    if(!myGist) return alert("No se encontró respaldo en tu cuenta.");
+                    
+                    // TRUCO: Agregamos ?t=TIMESTAMP para forzar a GitHub a darnos la versión nueva y no la caché
+                    const rawUrl = myGist.files["finanzas.json"].raw_url + '?t=' + new Date().getTime();
+                    
+                    const f = await fetch(rawUrl);
+                    if(!f.ok) throw new Error("Error descargando el archivo raw");
+
                     const d = await f.json(); 
+                    // Limpiamos todo menos el token antes de escribir
+                    const savedToken = localStorage.getItem('gh_token_f2026');
+                    localStorage.clear();
+                    localStorage.setItem('gh_token_f2026', savedToken);
+
                     Object.keys(d).forEach(k => { if(k !== 'gh_token_f2026') localStorage.setItem(k, d[k]); });
+                    alert("¡Sincronizado correctamente! Recargando...");
                     location.reload();
+
                 } else {
+                    // MODO GUARDAR
                     const data = {}; 
                     for(let i=0; i<localStorage.length; i++) { 
-                        const k = localStorage.key(i); if(k !== 'gh_token_f2026') data[k] = localStorage.getItem(k); 
+                        const k = localStorage.key(i); 
+                        if(k !== 'gh_token_f2026') data[k] = localStorage.getItem(k); 
                     }
+                    
                     await fetch(myGist ? `https://api.github.com/gists/${myGist.id}` : 'https://api.github.com/gists', {
                         method: myGist ? 'PATCH' : 'POST',
-                        headers: { 'Authorization': `token ${t}` },
-                        body: JSON.stringify({ description: "Backup Finanzas 2026", public: false, files: { "finanzas.json": { content: JSON.stringify(data) } } })
+                        headers: { 
+                            'Authorization': `token ${t}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 
+                            description: "Backup Finanzas 2026", 
+                            public: false, 
+                            files: { 
+                                "finanzas.json": { content: JSON.stringify(data) } 
+                            } 
+                        })
                     });
-                    alert("Sincronizado!");
+                    alert("¡Datos subidos a la nube!");
                 }
-            } catch(e) { alert("Error de Token o Red"); }
+            } catch(e) { 
+                alert("Error: " + e.message + "\nVerifica que tu Token tenga permisos de 'gist'."); 
+            }
         }
 
         function updateHistory() {
