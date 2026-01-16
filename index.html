@@ -18,6 +18,10 @@
         /* Modal Styles */
         #cloud-modal { transition: opacity 0.2s; }
         #cloud-modal.hidden { display: none; }
+        /* Chart Styles */
+        .circle-chart { width: 120px; height: 120px; transform: rotate(-90deg); }
+        .circle-bg { fill: none; stroke: #334155; stroke-width: 2.5; }
+        .circle { fill: none; stroke-width: 2.5; stroke-linecap: round; transition: stroke-dasharray 1s ease-out; }
     </style>
 </head>
 <body>
@@ -46,59 +50,73 @@
             <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-xl"><i class="fas fa-cloud"></i></div>
             <h3 class="font-black text-lg text-slate-800">Sincronización</h3>
             <p class="text-xs text-slate-400 font-bold mb-4">Elige una acción para tus datos</p>
-            
-            <button onclick="runCloudAction('GUARDAR')" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
-                <i class="fas fa-upload"></i> Subir a Nube
-            </button>
-            
-            <button onclick="runCloudAction('DESCARGAR')" class="w-full py-3 bg-white border-2 border-slate-100 text-slate-600 rounded-xl font-bold active:scale-95 transition-transform flex items-center justify-center gap-2">
-                <i class="fas fa-download"></i> Descargar
-            </button>
-
+            <button onclick="runCloudAction('GUARDAR')" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2"><i class="fas fa-upload"></i> Subir a Nube</button>
+            <button onclick="runCloudAction('DESCARGAR')" class="w-full py-3 bg-white border-2 border-slate-100 text-slate-600 rounded-xl font-bold active:scale-95 transition-transform flex items-center justify-center gap-2"><i class="fas fa-download"></i> Descargar</button>
             <button onclick="toggleCloudMenu(false)" class="text-red-500 font-bold text-xs mt-4 uppercase tracking-widest p-2">Cancelar</button>
         </div>
     </div>
 
     <main class="p-5 max-w-lg mx-auto">
-        <div id="esperado" class="tab-content active space-y-6">
+        
+        <div id="dashboard" class="tab-content active space-y-5">
+            <h2 class="text-xl font-black text-slate-800 ml-1">Resumen Ejecutivo</h2>
+            
+            <div class="ios-card p-6 flex items-center justify-between bg-slate-800 text-white shadow-xl">
+                <div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Presupuesto (Ingresos)</p>
+                    <p id="dash-total-budget" class="text-3xl font-black mb-4">Q0.00</p>
+                    <div class="flex gap-4">
+                        <div><p class="text-[8px] text-slate-500 uppercase">Gastado Real</p><p id="dash-spent" class="font-bold text-red-400">Q0.00</p></div>
+                        <div><p class="text-[8px] text-slate-500 uppercase">Disponible</p><p id="dash-avail" class="font-bold text-emerald-400">Q0.00</p></div>
+                    </div>
+                </div>
+                <div class="relative flex items-center justify-center">
+                    <svg class="circle-chart" viewBox="0 0 36 36">
+                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        <path id="dash-circle" class="circle" stroke="#007AFF" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <div class="absolute text-[10px] font-bold text-slate-300"><span id="dash-percent">0</span>%</div>
+                </div>
+            </div>
+
+            <div class="ios-card p-5">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-3">Top 3 Gastos Reales</p>
+                <div id="dash-top-expenses" class="space-y-3"></div>
+            </div>
+
+            <div class="ios-card p-5">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-4">Distribución de Gasto Real</p>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-xs font-bold text-slate-700 mb-1"><span>Quincena 1</span><span id="dash-q1-val">Q0</span></div>
+                        <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden"><div id="dash-bar-q1" class="h-full bg-indigo-500 rounded-full" style="width:0%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs font-bold text-slate-700 mb-1"><span>Quincena 2</span><span id="dash-q2-val">Q0</span></div>
+                        <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden"><div id="dash-bar-q2" class="h-full bg-emerald-500 rounded-full" style="width:0%"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="esperado" class="tab-content space-y-6">
             <div class="space-y-3">
                 <div class="ios-card p-4 bg-indigo-50 border border-indigo-100 flex justify-between items-center">
-                    <div>
-                        <p class="text-[10px] font-black text-indigo-400 uppercase">Ingreso Ideal Q1</p>
-                        <div class="flex items-center font-black text-indigo-600 text-xl">
-                            <span>Q</span>
-                            <input type="number" inputmode="decimal" id="p-inc-q1" value="4700.00" oninput="calculateReal()" class="bg-transparent outline-none w-24">
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[9px] font-bold text-slate-400 uppercase">Sobrante Q1</p>
-                        <p id="p-save-q1" class="text-sm font-black text-slate-700">Q0.00</p>
-                    </div>
+                    <div><p class="text-[10px] font-black text-indigo-400 uppercase">Ingreso Ideal Q1</p><div class="flex items-center font-black text-indigo-600 text-xl"><span>Q</span><input type="number" inputmode="decimal" id="p-inc-q1" value="4700.00" oninput="calculateReal()" class="bg-transparent outline-none w-24"></div></div>
+                    <div class="text-right"><p class="text-[9px] font-bold text-slate-400 uppercase">Sobrante Q1</p><p id="p-save-q1" class="text-sm font-black text-slate-700">Q0.00</p></div>
                 </div>
                 <div id="list-plan-q1" class="space-y-2"></div>
                 <button onclick="addExtraPlan('list-plan-q1')" class="w-full py-2 bg-white rounded-xl border-2 border-dashed border-indigo-200 text-indigo-400 font-bold text-[10px] uppercase">+ Gasto Plan Q1</button>
             </div>
-
             <hr class="border-slate-200">
-
             <div class="space-y-3">
                 <div class="ios-card p-4 bg-emerald-50 border border-emerald-100 flex justify-between items-center">
-                    <div>
-                        <p class="text-[10px] font-black text-emerald-500 uppercase">Ingreso Ideal Q2</p>
-                        <div class="flex items-center font-black text-emerald-600 text-xl">
-                            <span>Q</span>
-                            <input type="number" inputmode="decimal" id="p-inc-q2" value="3460.00" oninput="calculateReal()" class="bg-transparent outline-none w-24">
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[9px] font-bold text-slate-400 uppercase">Sobrante Q2</p>
-                        <p id="p-save-q2" class="text-sm font-black text-slate-700">Q0.00</p>
-                    </div>
+                    <div><p class="text-[10px] font-black text-emerald-500 uppercase">Ingreso Ideal Q2</p><div class="flex items-center font-black text-emerald-600 text-xl"><span>Q</span><input type="number" inputmode="decimal" id="p-inc-q2" value="3460.00" oninput="calculateReal()" class="bg-transparent outline-none w-24"></div></div>
+                    <div class="text-right"><p class="text-[9px] font-bold text-slate-400 uppercase">Sobrante Q2</p><p id="p-save-q2" class="text-sm font-black text-slate-700">Q0.00</p></div>
                 </div>
                 <div id="list-plan-q2" class="space-y-2"></div>
                 <button onclick="addExtraPlan('list-plan-q2')" class="w-full py-2 bg-white rounded-xl border-2 border-dashed border-emerald-200 text-emerald-400 font-bold text-[10px] uppercase">+ Gasto Plan Q2</button>
             </div>
-
             <div class="ios-card p-5 bg-slate-800 text-white space-y-3 shadow-xl">
                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Resumen Plan Mensual</p>
                 <div class="flex justify-between items-end">
@@ -121,9 +139,7 @@
                 </div>
                 <div id="rows-q1" class="space-y-2"></div>
             </div>
-
             <hr class="border-slate-200">
-
             <div class="space-y-3">
                 <div class="ios-card p-4 bg-emerald-600 text-white shadow-lg flex justify-between items-center">
                     <div><p class="text-[9px] font-bold uppercase opacity-70">Sobrante Q2 (En mano)</p><p id="wallet-q2" class="text-xl font-black">Q0.00</p></div>
@@ -159,11 +175,12 @@
         </div>
     </main>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-200 flex justify-around p-4 pb-8 z-50">
-        <button onclick="openTab(event, 'esperado')" class="tab-btn active-tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300"><i class="fas fa-edit text-xl"></i><span class="text-[9px] font-bold uppercase">Plan</span></button>
-        <button onclick="openTab(event, 'real')" class="tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300"><i class="fas fa-wallet text-xl"></i><span class="text-[9px] font-bold uppercase">Real</span></button>
-        <button onclick="openTab(event, 'ahorro')" class="tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300"><i class="fas fa-piggy-bank text-xl"></i><span class="text-[9px] font-bold uppercase">Metas</span></button>
-        <button onclick="openTab(event, 'historial')" class="tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300"><i class="fas fa-calendar-alt text-xl"></i><span class="text-[9px] font-bold uppercase">Anual</span></button>
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-200 flex justify-around p-3 pb-8 z-50">
+        <button onclick="openTab(event, 'dashboard')" class="tab-btn active-tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300"><i class="fas fa-chart-pie text-lg"></i><span class="text-[8px] font-bold uppercase">Dash</span></button>
+        <button onclick="openTab(event, 'esperado')" class="tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300"><i class="fas fa-edit text-lg"></i><span class="text-[8px] font-bold uppercase">Plan</span></button>
+        <button onclick="openTab(event, 'real')" class="tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300"><i class="fas fa-wallet text-lg"></i><span class="text-[8px] font-bold uppercase">Real</span></button>
+        <button onclick="openTab(event, 'ahorro')" class="tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300"><i class="fas fa-piggy-bank text-lg"></i><span class="text-[8px] font-bold uppercase">Metas</span></button>
+        <button onclick="openTab(event, 'historial')" class="tab-btn flex flex-col items-center gap-1 flex-1 text-slate-300"><i class="fas fa-calendar-alt text-lg"></i><span class="text-[8px] font-bold uppercase">Anual</span></button>
     </nav>
 
     <script>
@@ -176,9 +193,13 @@
 
         function renderRows() {
             const renderPlan = (items, container) => {
+                // AHORA INCLUYE EL BOTÓN DE BORRAR (TRASH)
                 document.getElementById(container).innerHTML = items.map((item, i) => `
-                    <div class="ios-card p-3 flex justify-between items-center bg-white/50">
-                        <span class="text-xs font-bold text-slate-700">${item.n}</span>
+                    <div class="ios-card p-3 flex justify-between items-center bg-white/50 group">
+                        <div class="flex items-center gap-2">
+                             <button onclick="deleteItem('${container}', ${i})" class="w-6 h-6 rounded-full bg-red-100 text-red-500 flex items-center justify-center active:scale-90 transition-transform"><i class="fas fa-trash text-[10px]"></i></button>
+                             <span class="text-xs font-bold text-slate-700">${item.n}</span>
+                        </div>
                         <input type="number" inputmode="decimal" value="${item.v.toFixed(2)}" oninput="updatePlanValue('${container}', ${i}, this.value)" class="w-20 text-right font-black text-slate-800 text-xs bg-slate-100 rounded-lg p-1 outline-none">
                     </div>`).join('');
             };
@@ -189,8 +210,17 @@
             calculateReal();
         }
 
+        function deleteItem(container, index) {
+            if(!confirm("¿Eliminar este gasto?")) return;
+            if(container === 'list-plan-q1') itemsQ1.splice(index, 1);
+            else itemsQ2.splice(index, 1);
+            localStorage.setItem('conf_q1', JSON.stringify(itemsQ1));
+            localStorage.setItem('conf_q2', JSON.stringify(itemsQ2));
+            renderRows();
+        }
+
         function createInputRow(item, idx, prefix) {
-            return `<div id="real-row-${prefix}-${idx}" class="r-row-${prefix} ios-card p-4 flex items-center justify-between mb-2" data-exp="${item.v}">
+            return `<div id="real-row-${prefix}-${idx}" class="r-row-${prefix} ios-card p-4 flex items-center justify-between mb-2" data-exp="${item.v}" data-name="${item.n}">
                 <div class="flex items-center gap-3"><i class="fas ${icons[item.n] || 'fa-tag'} text-slate-300"></i><div><p class="text-sm font-bold text-slate-800">${item.n}</p><p class="plan-label text-[9px] text-slate-400 uppercase">Plan: Q${item.v.toFixed(2)}</p></div></div>
                 <div class="text-right"><input type="number" inputmode="decimal" class="val-input w-24 text-right font-black text-indigo-600 border-b border-slate-100 outline-none bg-transparent" oninput="calculateReal()" placeholder="0.00"><p class="dif-lbl text-[9px] font-black text-slate-300 mt-1">Q0.00</p></div></div>`;
         }
@@ -224,12 +254,14 @@
 
             const rI1 = parseFloat(document.getElementById('inc-q1').value) || 0; const rI2 = parseFloat(document.getElementById('inc-q2').value) || 0;
             let pg1 = 0, pg2 = 0, fl1 = 0, fl2 = 0, comp = true;
-            
+            let allExpenses = []; // Para el dashboard Top 3
+
             const proc = (prefix, isQ1) => {
                 document.querySelectorAll(`.r-row-${prefix}`).forEach(row => {
-                    const pl = parseFloat(row.dataset.exp), inp = row.querySelector('.val-input'), cl = row.querySelector('.dif-lbl');
+                    const pl = parseFloat(row.dataset.exp), name = row.dataset.name, inp = row.querySelector('.val-input'), cl = row.querySelector('.dif-lbl');
                     if(inp.value !== "") {
                         const v = parseFloat(inp.value); if(isQ1) pg1 += v; else pg2 += v;
+                        allExpenses.push({n: name, v: v});
                         const d = pl - v;
                         if(d < 0) { cl.innerText = '-' + f(Math.abs(d)); cl.className = "dif-lbl text-[9px] font-black text-red-500 mt-1"; inp.classList.add('text-overspent'); inp.classList.remove(isQ1 ? 'text-indigo-600' : 'text-emerald-600'); }
                         else { cl.innerText = '+' + f(Math.abs(d)); cl.className = "dif-lbl text-[9px] font-black text-emerald-500 mt-1"; inp.classList.remove('text-overspent'); inp.classList.add(isQ1 ? 'text-indigo-600' : 'text-emerald-600'); }
@@ -246,6 +278,32 @@
                 const final = w1 + w2; document.getElementById('save-final-tab').innerText = f(final);
                 document.getElementById('bar').style.width = Math.max(0, Math.min((final/tPS)*100, 100)) + '%'; document.getElementById('status-txt').innerText = "Mes Completado";
             } else { document.getElementById('save-final-tab').innerText = "PENDIENTE"; document.getElementById('bar').style.width = "0%"; document.getElementById('status-txt').innerText = "Faltan datos"; }
+
+            // --- DASHBOARD UPDATE ---
+            const totalBudget = rI1 + rI2; 
+            const totalSpent = pg1 + pg2;
+            const avail = totalBudget - totalSpent;
+            const pct = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+
+            document.getElementById('dash-total-budget').innerText = f(totalBudget);
+            document.getElementById('dash-spent').innerText = f(totalSpent);
+            document.getElementById('dash-avail').innerText = f(avail);
+            document.getElementById('dash-percent').innerText = Math.round(pct);
+            document.getElementById('dash-circle').style.strokeDasharray = `${Math.min(pct, 100)}, 100`;
+            document.getElementById('dash-circle').style.stroke = pct > 100 ? '#FF3B30' : '#007AFF'; // Rojo si te pasas
+
+            // Top 3
+            allExpenses.sort((a,b) => b.v - a.v);
+            const top3 = allExpenses.slice(0, 3);
+            document.getElementById('dash-top-expenses').innerHTML = top3.length ? top3.map(i => `<div class="flex justify-between text-xs border-b border-slate-100 pb-2 last:border-0"><span class="font-bold text-slate-600">${i.n}</span><span class="font-black text-slate-800">${f(i.v)}</span></div>`).join('') : '<p class="text-xs text-slate-400 italic">Sin datos reales aún</p>';
+
+            // Q1 vs Q2
+            document.getElementById('dash-q1-val').innerText = f(pg1);
+            document.getElementById('dash-q2-val').innerText = f(pg2);
+            const maxQ = Math.max(pg1, pg2, 1);
+            document.getElementById('dash-bar-q1').style.width = (pg1 / maxQ * 100) + '%';
+            document.getElementById('dash-bar-q2').style.width = (pg2 / maxQ * 100) + '%';
+
             return { inc: rI1+rI2, exp: pg1+pg2, save: (comp ? w1+w2 : 0) };
         }
 
@@ -256,14 +314,14 @@
             if(name === 'historial') updateHistory();
         }
 
-        // --- GESTIÓN DE NUBE (NUEVA) ---
+        // --- GESTIÓN DE NUBE ---
         function toggleCloudMenu(show) {
             const el = document.getElementById('cloud-modal');
             if(show) { el.classList.remove('hidden'); } else { el.classList.add('hidden'); }
         }
 
         async function runCloudAction(action) {
-            toggleCloudMenu(false); // Cierra modal
+            toggleCloudMenu(false);
             let token = localStorage.getItem('gh_token_f2026');
             if(!token) { token = prompt("Pega tu Token de GitHub una sola vez:"); if(token) localStorage.setItem('gh_token_f2026', token); else return; }
             
