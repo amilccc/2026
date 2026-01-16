@@ -311,16 +311,34 @@
 
         function changeMonth() {
             const m = document.getElementById('global-month').value;
-            const s = JSON.parse(localStorage.getItem('f_v_cloud_' + m));
-            if(s) {
-                document.getElementById('p-inc-q1').value = s.pI1 || 4700;
-                document.getElementById('p-inc-q2').value = s.pI2 || 3460;
-                document.getElementById('inc-q1').value = s.inc1 || 4700;
-                document.getElementById('inc-q2').value = s.inc2 || 3460;
-                realValues = s.v_map || {};
-                hiddenRealItems[m] = s.hidden || [];
+            const dataStr = localStorage.getItem('f_v_cloud_' + m);
+            realValues = {};
+            hiddenRealItems[m] = [];
+
+            if(dataStr) {
+                try {
+                    const s = JSON.parse(dataStr);
+                    
+                    document.getElementById('p-inc-q1').value = s.pI1 || 4700;
+                    document.getElementById('p-inc-q2').value = s.pI2 || 3460;
+                    document.getElementById('inc-q1').value = s.inc1 || 4700;
+                    document.getElementById('inc-q2').value = s.inc2 || 3460;
+
+                    if (s.v_map) {
+                        // FORMATO NUEVO (Mapa)
+                        realValues = s.v_map;
+                        hiddenRealItems[m] = s.hidden || [];
+                    } else if (s.v1 || s.v2) {
+                        // FORMATO VIEJO (Listas v1, v2) - CONVERSION
+                        if(s.v1 && Array.isArray(s.v1)) {
+                            s.v1.forEach((val, i) => { if(val && val !== "") realValues[`q1_plan_${i}`] = val; });
+                        }
+                        if(s.v2 && Array.isArray(s.v2)) {
+                            s.v2.forEach((val, i) => { if(val && val !== "") realValues[`q2_plan_${i}`] = val; });
+                        }
+                    }
+                } catch(e) { console.error("Error leyendo mes", e); }
             } else {
-                realValues = {};
                 document.getElementById('inc-q1').value = 4700;
                 document.getElementById('inc-q2').value = 3460;
             }
@@ -358,7 +376,6 @@
             toggleCloudMenu(false);
             
             try {
-                // Paso 1: Buscar si ya existe el Gist
                 const res = await fetch('https://api.github.com/gists?per_page=100', { 
                     headers: { 'Authorization': `token ${t}`, 'Accept': 'application/vnd.github.v3+json' } 
                 });
@@ -373,25 +390,20 @@
 
                 if (action === "DESCARGAR") {
                     if(!myGist) return alert("No se encontró respaldo en tu cuenta.");
-                    
-                    // TRUCO: Agregamos ?t=TIMESTAMP para forzar a GitHub a darnos la versión nueva y no la caché
                     const rawUrl = myGist.files["finanzas.json"].raw_url + '?t=' + new Date().getTime();
-                    
                     const f = await fetch(rawUrl);
                     if(!f.ok) throw new Error("Error descargando el archivo raw");
 
                     const d = await f.json(); 
-                    // Limpiamos todo menos el token antes de escribir
                     const savedToken = localStorage.getItem('gh_token_f2026');
                     localStorage.clear();
                     localStorage.setItem('gh_token_f2026', savedToken);
 
                     Object.keys(d).forEach(k => { if(k !== 'gh_token_f2026') localStorage.setItem(k, d[k]); });
-                    alert("¡Sincronizado correctamente! Recargando...");
+                    alert("¡Sincronizado! Recargando...");
                     location.reload();
 
                 } else {
-                    // MODO GUARDAR
                     const data = {}; 
                     for(let i=0; i<localStorage.length; i++) { 
                         const k = localStorage.key(i); 
@@ -400,23 +412,16 @@
                     
                     await fetch(myGist ? `https://api.github.com/gists/${myGist.id}` : 'https://api.github.com/gists', {
                         method: myGist ? 'PATCH' : 'POST',
-                        headers: { 
-                            'Authorization': `token ${t}`,
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Authorization': `token ${t}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
                             description: "Backup Finanzas 2026", 
                             public: false, 
-                            files: { 
-                                "finanzas.json": { content: JSON.stringify(data) } 
-                            } 
+                            files: { "finanzas.json": { content: JSON.stringify(data) } } 
                         })
                     });
                     alert("¡Datos subidos a la nube!");
                 }
-            } catch(e) { 
-                alert("Error: " + e.message + "\nVerifica que tu Token tenga permisos de 'gist'."); 
-            }
+            } catch(e) { alert("Error: " + e.message); }
         }
 
         function updateHistory() {
