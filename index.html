@@ -39,7 +39,7 @@
                     <option value="Noviembre">Noviembre</option><option value="Diciembre">Diciembre</option>
                 </select>
             </div>
-            <button onclick="saveCurrentMonth()" class="bg-[#007AFF] text-white px-6 py-2 rounded-full font-bold text-sm shadow-md active:scale-95 transition-all">Guardar</button>
+            <button id="btn-save-top" onclick="saveCurrentMonth()" class="bg-[#007AFF] text-white px-6 py-2 rounded-full font-bold text-sm shadow-md active:scale-95 transition-all">Guardar</button>
         </div>
     </header>
 
@@ -154,7 +154,7 @@
         let itemsQ2 = JSON.parse(localStorage.getItem('conf_q2')) || [{n:"Renta Vivienda",v:500.00},{n:"Gimnasio",v:400.00},{n:"Tarjeta BAC",v:351.70},{n:"Préstamo 2/2",v:361.90},{n:"Gatos 2/2",v:300.00},{n:"Super",v:500.00},{n:"Gasolina",v:300.00},{n:"Uber",v:200.00}];
         let realValues = {}; 
         let hiddenRealItems = {}; 
-        let paidItems = {}; // NUEVA VARIABLE PARA ESTADO DE PAGO
+        let paidItems = {}; 
 
         function f(num) { return 'Q' + (num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
@@ -198,7 +198,7 @@
 
         function createInputRow(name, planVal, key, prefix, isExtra, extraIdx) {
             const savedVal = realValues[key] || "";
-            const isPaid = paidItems[key]; // Revisar si está pagado
+            const isPaid = paidItems[key]; 
             
             return `<div class="r-row ios-card p-4 flex items-center justify-between mb-2" data-key="${key}" data-plan="${planVal}" data-name="${name}">
                 <div class="flex items-center gap-3">
@@ -219,11 +219,10 @@
             </div>`;
         }
 
-        // FUNCION NUEVA PARA CAMBIAR ESTADO
         function togglePaid(key) {
             if(paidItems[key]) delete paidItems[key]; else paidItems[key] = true;
-            renderRealRows(); // Re-renderizar para actualizar cálculo
-            saveCurrentMonth(); // Guardar cambios
+            renderRealRows(); 
+            saveCurrentMonth(); 
         }
 
         function deleteRealRow(key, isExtra, idx, prefix) {
@@ -238,7 +237,7 @@
                 hiddenRealItems[m].push(key);
             }
             delete realValues[key];
-            delete paidItems[key]; // Limpiar estado si se borra
+            delete paidItems[key]; 
             renderRealRows();
         }
 
@@ -265,29 +264,25 @@
                 const diffL = row.querySelector('.dif-lbl');
                 const key = row.dataset.key;
                 const isQ1 = key.startsWith('q1');
-                const isPaid = paidItems[key]; // OBTENER ESTADO PAGADO
+                const isPaid = paidItems[key]; 
 
                 if (inp.value !== "") {
                     const val = parseFloat(inp.value);
-                    if (isQ1) pg1 += val; else pg2 += val; // Siempre sumar a lo gastado (pg)
+                    if (isQ1) pg1 += val; else pg2 += val; 
                     allEx.push({ n: row.dataset.name, v: val });
 
-                    // LOGICA NUEVA:
                     if (planVal > 0) {
                         const d = planVal - val;
-                        // Si NO está pagado y el valor es menor al plan, la diferencia se suma a POR PAGAR
                         if (!isPaid && d > 0) {
                             if (isQ1) pp1 += d; else pp2 += d;
                             diffL.innerText = "Faltan " + f(d);
                             diffL.className = "dif-lbl text-[9px] font-black mt-1 text-slate-400";
-                            comp = false; // Aún hay pendientes
+                            comp = false; 
                         } else {
-                            // Si está pagado (cerrado) o ya te pasaste del plan
                             diffL.innerText = (d < 0 ? '-' : '+') + f(Math.abs(d));
                             diffL.className = `dif-lbl text-[9px] font-black mt-1 ${d < 0 ? 'text-red-500' : 'text-emerald-500'}`;
                         }
                     } else { 
-                        // Es extra
                         diffL.innerText = "Extra"; 
                         diffL.className = "dif-lbl text-[9px] font-black mt-1 text-orange-400"; 
                     }
@@ -350,7 +345,7 @@
             const dataStr = localStorage.getItem('f_v_cloud_' + m);
             realValues = {};
             hiddenRealItems[m] = [];
-            paidItems = {}; // Resetear estado
+            paidItems = {}; 
 
             if(dataStr) {
                 try {
@@ -364,7 +359,7 @@
                     if (s.v_map) {
                         realValues = s.v_map;
                         hiddenRealItems[m] = s.hidden || [];
-                        paidItems = s.paid || {}; // CARGAR ESTADO PAGADO
+                        paidItems = s.paid || {}; 
                     } else if (s.v1 || s.v2) {
                         if(s.v1 && Array.isArray(s.v1)) s.v1.forEach((val, i) => { if(val && val !== "") realValues[`q1_plan_${i}`] = val; });
                         if(s.v2 && Array.isArray(s.v2)) s.v2.forEach((val, i) => { if(val && val !== "") realValues[`q2_plan_${i}`] = val; });
@@ -382,11 +377,22 @@
             const state = {
                 m, pI1: document.getElementById('p-inc-q1').value, pI2: document.getElementById('p-inc-q2').value,
                 inc1: document.getElementById('inc-q1').value, inc2: document.getElementById('inc-q2').value,
-                v_map: realValues, hidden: hiddenRealItems[m] || [], paid: paidItems, // GUARDAR ESTADO PAGADO
+                v_map: realValues, hidden: hiddenRealItems[m] || [], paid: paidItems, 
                 summary: calculateReal()
             };
             localStorage.setItem('f_v_cloud_' + m, JSON.stringify(state));
-            // alert('Guardado!'); // Opcional: Quité la alerta para que sea más fluido al hacer clic en pagado
+            
+            // FEEDBACK VISUAL PARA SABER QUE SI GUARDO
+            const btn = document.getElementById('btn-save-top');
+            if(btn) {
+                const original = btn.innerText;
+                btn.innerText = "¡Listo!";
+                btn.classList.add("bg-green-500");
+                setTimeout(() => {
+                    btn.innerText = original;
+                    btn.classList.remove("bg-green-500");
+                }, 1500);
+            }
         }
 
         function openTab(evt, name) {
@@ -437,6 +443,9 @@
                     location.reload();
 
                 } else {
+                    // FIX: GUARDAR AUTOMATICAMENTE LO QUE VES EN PANTALLA ANTES DE SUBIR
+                    saveCurrentMonth();
+
                     const data = {}; 
                     for(let i=0; i<localStorage.length; i++) { 
                         const k = localStorage.key(i); 
