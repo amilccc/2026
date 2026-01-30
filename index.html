@@ -239,9 +239,15 @@
             delete realValues[key];
             delete paidItems[key]; 
             renderRealRows();
+            saveCurrentMonth();
         }
 
-        function saveRealValue(key, val) { realValues[key] = val; calculateReal(); }
+        function saveRealValue(key, val) { 
+            realValues[key] = val; 
+            calculateReal(); 
+            // Guardamos localmente para que no se pierda al cambiar de tab
+            saveCurrentMonth(); 
+        }
 
         function addExtraReal(prefix) {
             const n = prompt("Nombre:"); if(!n) return;
@@ -318,10 +324,57 @@
             return { inc: totalIn, exp: totalOut, save: final };
         }
 
+        // --- FUNCIONES MODIFICADAS PARA SINCRONIZACION AUTOMATICA ---
+
         function deletePlanItem(container, index) {
-            if(!confirm("¿Borrar del Plan Maestro?")) return;
-            if(container === 'list-plan-q1') itemsQ1.splice(index, 1); else itemsQ2.splice(index, 1);
-            localStorage.setItem('conf_q1', JSON.stringify(itemsQ1)); localStorage.setItem('conf_q2', JSON.stringify(itemsQ2));
+            if(!confirm("¿Borrar del Plan Maestro? Al hacerlo se ajustarán los registros Reales.")) return;
+            
+            // Identificar en qué lista estamos
+            const isQ1 = (container === 'list-plan-q1');
+            const prefix = isQ1 ? 'q1' : 'q2';
+            const currentArr = isQ1 ? itemsQ1 : itemsQ2;
+
+            // Reordenar los valores REALES para que no se desfacen
+            // Movemos los valores desde la posición borrada hacia atrás
+            for (let i = index; i < currentArr.length - 1; i++) {
+                const currentKey = `${prefix}_plan_${i}`;
+                const nextKey = `${prefix}_plan_${i+1}`;
+
+                // Mover valor numérico
+                if (realValues[nextKey] !== undefined) {
+                    realValues[currentKey] = realValues[nextKey];
+                } else {
+                    delete realValues[currentKey];
+                }
+
+                // Mover estado de pagado
+                if (paidItems[nextKey]) {
+                    paidItems[currentKey] = true;
+                } else {
+                    delete paidItems[currentKey];
+                }
+            }
+
+            // Eliminar el último registro (que ahora está duplicado o sobra)
+            const lastIndex = currentArr.length - 1;
+            const lastKey = `${prefix}_plan_${lastIndex}`;
+            delete realValues[lastKey];
+            delete paidItems[lastKey];
+
+            // Limpiar también la lista de ocultos para este mes
+            const m = document.getElementById('global-month').value;
+            if(hiddenRealItems[m]) {
+                 // Reiniciamos ocultos de plan para evitar confusiones de índices
+                 hiddenRealItems[m] = hiddenRealItems[m].filter(k => !k.startsWith(`${prefix}_plan_`));
+            }
+
+            // Ahora sí, borrar del array del plan
+            if(isQ1) itemsQ1.splice(index, 1); else itemsQ2.splice(index, 1);
+            
+            // Guardar todo
+            localStorage.setItem('conf_q1', JSON.stringify(itemsQ1)); 
+            localStorage.setItem('conf_q2', JSON.stringify(itemsQ2));
+            saveCurrentMonth(); // Importante: Guardar el reajuste del mes actual
             renderRows();
         }
 
@@ -335,10 +388,28 @@
         function addExtraPlan(container) {
             const n = prompt("Nombre:"); if(!n) return;
             const v = parseFloat(prompt("Monto:")) || 0;
+            
+            // Agregar al plan
             if(container === 'list-plan-q1') itemsQ1.push({n, v}); else itemsQ2.push({n, v});
-            localStorage.setItem('conf_q1', JSON.stringify(itemsQ1)); localStorage.setItem('conf_q2', JSON.stringify(itemsQ2));
+            
+            // Asegurar que aparezca en el REAL (limpiando si estaba oculto por un borrado anterior)
+            const m = document.getElementById('global-month').value;
+            const prefix = (container === 'list-plan-q1') ? 'q1' : 'q2';
+            const newIndex = (container === 'list-plan-q1') ? itemsQ1.length - 1 : itemsQ2.length - 1;
+            const newKey = `${prefix}_plan_${newIndex}`;
+
+            if(hiddenRealItems[m]) {
+                hiddenRealItems[m] = hiddenRealItems[m].filter(k => k !== newKey);
+            }
+
+            // Guardar cambios
+            localStorage.setItem('conf_q1', JSON.stringify(itemsQ1)); 
+            localStorage.setItem('conf_q2', JSON.stringify(itemsQ2));
+            saveCurrentMonth(); // Asegura que el nuevo item se registre en el mes actual
             renderRows();
         }
+
+        // -------------------------------------------------------------
 
         function changeMonth() {
             const m = document.getElementById('global-month').value;
@@ -443,7 +514,6 @@
                     location.reload();
 
                 } else {
-                    // FIX: GUARDAR AUTOMATICAMENTE LO QUE VES EN PANTALLA ANTES DE SUBIR
                     saveCurrentMonth();
 
                     const data = {}; 
